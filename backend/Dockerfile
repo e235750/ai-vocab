@@ -1,0 +1,23 @@
+FROM python:3.13-slim AS base
+
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN pip install poetry
+
+WORKDIR /app
+
+COPY README.md ./
+COPY pyproject.toml poetry.lock* ./
+
+COPY app/ ./app/
+
+RUN poetry install
+
+COPY app/ ./app/
+
+EXPOSE 8000
+
+CMD ["poetry", "run", "uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]

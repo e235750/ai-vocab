@@ -1,0 +1,23 @@
+# ===== 機密情報（必須） =====
+.env
+.env.*
+backend/.env
+*.key
+*.pem
+*.crt
+
+# ===== Node.js（必須） =====
+node_modules/
+.next/
+
+# ===== Python（必須） =====
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# ===== Docker開発用 =====
+docker-compose.override.yml
+
+# ===== OS・エディタ =====
+.DS_Store
+.vscode/
