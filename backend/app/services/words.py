@@ -11,11 +11,20 @@ _SYSTEM_PROMPT = """
     以下のフォーマットに従ってください。
 
     {
-      "english": "元の英単語",
-      "japanese": ["日本語訳", "日本語訳2"],
-      "synonyms": ["類義語1", "類義語2"],
-      "example_sentences": {english: ["例文1", "例文2"], japanese: ["例文1の日本語訳", "例文2の日本語訳"]},
-      "part_of_speech": "品詞（例: "noun-名詞", "verb-動詞", "adjective-形容詞", "adverb-副詞"など）"
+        "english": "information",
+        "japanese": ["情報", "知識"],
+        "synonyms": ["data", "details", "knowledge"],
+        "example_sentences": [
+            {
+            "english": "I need more information about the project.",
+            "japanese": "そのプロジェクトに関するもっと多くの情報が必要です。"
+            },
+            {
+            "english": "The presentation provided valuable information.",
+            "japanese": "そのプレゼンテーションは貴重な情報を提供しました。"
+            }
+        ],
+        "part_of_speech": ["noun-名詞", "verb-動詞"]
     }
 
     - 日本語訳は、最も一般的であり適切であるものを提供してください。
@@ -49,7 +58,7 @@ async def get_word_info_from_llm(word: str) -> dict: # 戻り値はdictとしま
 
     try:
         json_string = completion.choices[0].message.content
-        extracted_data = json.loads(json_string)
+        extracted_data = json.loads(json_string.strip())
 
         # パースされたデータが想定通りの辞書であることを確認
         if not isinstance(extracted_data, dict):
@@ -63,4 +72,3 @@ async def get_word_info_from_llm(word: str) -> dict: # 戻り値はdictとしま
     except Exception as e:
         print(f"An unexpected error occurred in get_word_info: {e}")
         raise
-

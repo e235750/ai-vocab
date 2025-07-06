@@ -1,9 +1,21 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+
+from .core.firebase import initialize_firebase
 
 from .api.router import api_router
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # アプリケーション起動時に実行
+    print("アプリケーションを起動します...")
+    initialize_firebase()
+    yield
+    # アプリケーション終了時に実行
+    print("アプリケーションをシャットダウンします...")
+
+app = FastAPI(lifespan=lifespan)
 
 @app.get("/")
 async def root():
