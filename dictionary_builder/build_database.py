@@ -14,7 +14,12 @@ logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(
 def main():
     # 1. Firebaseの初期化
     try:
-        cred = credentials.Certificate(os.path.join(".secrets", "serviceAccountKey.json"))
+        creds_json_str = os.getenv("FIREBASE_CREDENTIALS_JSON")
+        if not creds_json_str:
+            raise ValueError("環境変数 'FIREBASE_CREDENTIALS_JSON' が設定されていません。")
+
+        service_account_info = json.loads(creds_json_str)
+        cred = credentials.Certificate(service_account_info)
         firebase_admin.initialize_app(cred)
         db = firestore.client()
         logging.info("Firebaseの初期化に成功しました。")
