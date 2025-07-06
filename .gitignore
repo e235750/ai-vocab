@@ -18,6 +18,10 @@ __pycache__/
 # ===== Docker開発用 =====
 docker-compose.override.yml
 
+# ===== secrets =====
+.secrets/
+serviceAccountKey.json
+
 # ===== OS・エディタ =====
 .DS_Store
 .vscode/

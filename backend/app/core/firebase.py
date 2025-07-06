@@ -17,8 +17,7 @@ def initialize_firebase():
             if not creds_json_str:
                 raise ValueError("環境変数 'FIREBASE_CREDENTIALS_JSON' が設定されていません。")
 
-            creds_json = json.loads(creds_json_str)
-            cred = credentials.Certificate(creds_json)
+            cred = credentials.Certificate(".secrets/serviceAccountKey.json")
             firebase_admin.initialize_app(cred)
             print("Firebase Admin SDKが正常に初期化されました。")
         except (ValueError, json.JSONDecodeError, FirebaseError) as e:
