@@ -27,3 +27,13 @@ services:
       - ./backend/app:/app/app
       - ./backend/pyproject.toml:/app/pyproject.toml
       - ./backend/poetry.lock:/app/poetry.lock
+
+  dictionary_builder:
+    build:
+      context: ./dictionary_builder
+      dockerfile: Dockerfile
+    container_name: dictionary-builder-script
+    env_file:
+      - ./dictionary_builder/.env
+    volumes:
+      - ./dictionary_builder/data:/app/data
