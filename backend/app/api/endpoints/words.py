@@ -1,9 +1,11 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, status, Depends
+from firebase_admin import firestore
 from datetime import datetime
 from uuid import uuid4
 
-from ...schemas.words import WordResponse, WordsInfoRequest
+from ...schemas.words import WordRequest, WordResponse, WordsInfoRequest
 from ...services.words import get_word_info_from_llm
+from app.core.firebase import get_db
 
 router = APIRouter()
 
@@ -23,16 +25,38 @@ async def get_word_info(request: WordsInfoRequest) -> WordResponse:
     except Exception as e:
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail=str(e))
 
-    # レスポンスモデルに変換
     response = WordResponse(
-        id=str(uuid4()),
         english=word,
-        japanese=word_info.get("japanese", ""),
+        japanese=word_info.get("japanese", []),
         synonyms=word_info.get("synonyms", []),
         example_sentences=word_info.get("example_sentences", []),
-        part_of_speech=word_info.get("part_of_speech", ""),
-        created_at=datetime.now(),
-        updated_at=datetime.now()
+        part_of_speech=word_info.get("part_of_speech", [])
     )
 
     return response
+
+@router.post("/word", response_model=WordResponse, status_code=status.HTTP_201_CREATED)
+async def create_word(request: WordRequest, db: firestore.Client = Depends(get_db)):
+    """
+    単語情報をデータベースに保存するエンドポイント
+    """
+
+    example_sentences_dict = None
+    if request.example_sentences:
+        # Pydantic v2 をお使いの場合 .model_dump() を使用
+        example_sentences_dict = [ex.model_dump() for ex in request.example_sentences]
+    now = datetime.now()
+    word_data = {
+        "id": str(uuid4()),
+        "english": request.english,
+        "japanese": request.japanese,
+        "synonyms": request.synonyms,
+        "example_sentences": example_sentences_dict,
+        "part_of_speech": request.part_of_speech,
+        "created_at": now,
+        "updated_at": now
+    }
+
+    doc_ref = db.collection("words").document(word_data["id"])
+    doc_ref.set(word_data)
+    return word_data

@@ -4,6 +4,8 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
     container_name: ai-vacab-frontend
+    env_file:
+      - ./frontend/.env.local
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
