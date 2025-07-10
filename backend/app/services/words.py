@@ -55,7 +55,7 @@ async def generate_enhanced_word_info(dictionary_data: DictionaryData) -> WordRe
         raise Exception("LLM client is not initialized.")
 
     word = dictionary_data.word
-    print(dictionary_data)
+    logging.debug(dictionary_data)
 
     # 新しい要件に基づいたシステムプロンプト
     system_prompt = f"""
@@ -115,8 +115,8 @@ async def generate_enhanced_word_info(dictionary_data: DictionaryData) -> WordRe
         return WordResponse.model_validate_json(json_str)
 
     except (ValueError, json.JSONDecodeError) as e:
-        print(f"JSONの解析に失敗しました: {e}")
-        print(f"LLMからの生の応答（再掲）: {response_content}")
+        logging.error(f"JSONの解析に失敗しました: {e}")
+        logging.error(f"LLMからの生の応答（再掲）: {response_content}")
         raise
 
 async def get_dictionary_data_for_word(word: str) -> DictionaryData:
