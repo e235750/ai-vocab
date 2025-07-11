@@ -4,7 +4,7 @@ from datetime import datetime
 from uuid import uuid4
 
 from app.core.firebase import get_db
-from ...schemas.words import WordRequest, WordResponse, WordsInfoRequest, DictionaryData
+from ...schemas.words import WordRequest, WordResponse, WordsInfoRequest
 from ...services.words import generate_enhanced_word_info, get_dictionary_data_for_word, get_word_info_from_free_dictionary
 
 router = APIRouter()
@@ -15,21 +15,17 @@ async def create_word(request: WordRequest, db: firestore.Client = Depends(get_d
     単語情報をデータベースに保存するエンドポイント
     """
 
-    example_sentences_dict = None
-    if request.example_sentences:
-        # Pydantic v2 をお使いの場合 .model_dump() を使用
-        example_sentences_dict = [ex.model_dump() for ex in request.example_sentences]
     now = datetime.now()
     word_data = {
-        "id": str(uuid4()),
-        "english": request.english,
-        "japanese": request.japanese,
-        "synonyms": request.synonyms,
-        "example_sentences": example_sentences_dict,
-        "part_of_speech": request.part_of_speech,
-        "created_at": now,
-        "updated_at": now
-    }
+    "id": str(uuid4()),
+    "english": request.english,
+    "definitions": [definition.model_dump() for definition in request.definitions],
+    "synonyms": request.synonyms,
+    "example_sentences": [sentence.model_dump() for sentence in request.example_sentences] if request.example_sentences else [],
+    "phonetics": request.phonetics.model_dump() if request.phonetics else None,
+    "created_at": now,
+    "updated_at": now
+}
 
     doc_ref = db.collection("words").document(word_data["id"])
     doc_ref.set(word_data)
