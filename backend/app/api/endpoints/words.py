@@ -5,7 +5,7 @@ from uuid import uuid4
 
 from app.core.firebase import get_db
 from ...schemas.words import WordRequest, WordResponse, WordsInfoRequest, DictionaryData
-from ...services.words import generate_enhanced_word_info, get_dictionary_data_for_word
+from ...services.words import generate_enhanced_word_info, get_dictionary_data_for_word, get_word_info_from_free_dictionary
 
 router = APIRouter()
 
@@ -45,5 +45,6 @@ async def get_enhanced_word_info(
     request: WordsInfoRequest,
 ) -> WordResponse:
     dictionary_data = await get_dictionary_data_for_word(request.word)
-    enhanced_info = await generate_enhanced_word_info(dictionary_data)
+    free_dictionary_data = await get_word_info_from_free_dictionary(request.word)
+    enhanced_info = await generate_enhanced_word_info(dictionary_data, free_dictionary_data)
     return enhanced_info
