@@ -5,13 +5,13 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
 } from 'firebase/auth'
-import { FireBaseError } from 'firebase/app'
+import { FirebaseError } from 'firebase/app'
 import { auth } from './config'
 
 export const register = async (email: string, password: string) => {
   try {
     await createUserWithEmailAndPassword(auth, email, password)
-  } catch (error: FireBaseError) {
+  } catch (error: FirebaseError) {
     if (error.code === 'auth/email-already-in-use') {
       alert('このメールアドレスはすでに使用されています。')
       throw new Error('このメールアドレスはすでに使用されています。')
