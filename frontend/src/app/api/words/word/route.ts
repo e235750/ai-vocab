@@ -1,8 +1,6 @@
 export async function POST(request: Request) {
-  const { word_data } = await request.json()
-  console.log('Received word data:', word_data)
-
-  if (!word_data) {
+  const { wordData } = await request.json()
+  if (!wordData) {
     return new Response(JSON.stringify({ error: 'Word data is required' }), {
       status: 400,
     })
@@ -14,7 +12,7 @@ export async function POST(request: Request) {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(word_data),
+      body: JSON.stringify(wordData),
     })
 
     if (!response.ok) {

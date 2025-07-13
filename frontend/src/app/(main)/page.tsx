@@ -1,73 +1,75 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useState } from 'react'
+import Header from '@/components/Header'
+import CardViewer from '@/components/CardViewer'
+import DeckList from '@/components/wordBook/DeckList'
+import CreateDeck from '@/components/wordBook/CreateDeck'
+import { type Deck } from '@/components/wordBook/DeckItem'
 
-export default function Home() {
-  const wordRef = useRef<HTMLInputElement>(null)
-  const [wordInfo, setWordInfo] = useState<any>(null)
-  async function fetchWordInfo(word: string) {
-    console.log('Fetching word info for:', word)
-    const response = await fetch('/api/words/info', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ word }),
-    })
+// ダミーデータは同じ
+const initialDecks: Deck[] = [
+  {
+    id: 1,
+    name: 'TOEIC頻出単語',
+    cards: [
+      { id: 101, word: 'example', definition: '...' },
+      { id: 102, word: 'test', definition: '...' },
+    ],
+  },
+  {
+    id: 2,
+    name: 'ビジネス英会話',
+    cards: [{ id: 201, word: 'negotiate', definition: '...' } /* ... */],
+  },
+]
 
-    if (!response.ok) {
-      throw new Error('Failed to fetch word info')
-    }
+export default function HomePage() {
+  const [decks, setDecks] = useState<Deck[]>(initialDecks)
+  const [selectedDeckId, setSelectedDeckId] = useState<number>(1)
+  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0)
+  const [isOpen, setIsOpen] = useState<boolean>(false)
 
-    setWordInfo(await response.json())
-    return response.json()
+  const selectedDeck = decks.find((deck) => deck.id === selectedDeckId)
+  const currentCard = selectedDeck?.cards[currentCardIndex]
+
+  const handleSelectDeck = (deckId: number) => {
+    setSelectedDeckId(deckId)
+    setCurrentCardIndex(0)
   }
 
-  async function createWord(wordData: any) {
-    console.log('Creating word with data:', wordData)
-    const response = await fetch('api/words/word', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ word_data: wordData }),
-    })
-
-    if (!response.ok) {
-      throw new Error('Failed to create word')
-    }
-
-    return response.json()
+  const handleNavigateCard = (newIndex: number) => {
+    setCurrentCardIndex(newIndex)
   }
 
   return (
     <>
-      <input
-        className="border border-gray-300 rounded-md p-2"
-        type="text"
-        ref={wordRef}
-      />
-      <button
-        className="bg-blue-500 text-white px-4 py-2"
-        onClick={() => fetchWordInfo(wordRef.current?.value || '')}
-      >
-        Fetch Word Info
-      </button>
-      {wordInfo && (
-        <div className="mt-4">
-          <h2 className="text-lg font-semibold">Word Information:</h2>
-          <pre className="bg-gray-100 p-2 rounded-md">
-            {JSON.stringify(wordInfo, null, 2)}
-          </pre>
-        </div>
-      )}
+      <Header />
+      <main className="max-w-4xl mx-auto mt-5">
+        <div className="flex flex-col gap-8">
+          {selectedDeck && currentCard ? (
+            <CardViewer
+              deckName={selectedDeck.name}
+              currentCard={currentCard}
+              totalCards={selectedDeck.cards.length}
+              currentIndex={currentCardIndex}
+              onNavigate={handleNavigateCard}
+            />
+          ) : (
+            <div className="p-6 text-center bg-white border border-gray-300 rounded-xl">
+              単語帳を選択してください。
+            </div>
+          )}
 
-      <button
-        className="bg-green-500 text-white px-4 py-2"
-        onClick={() => createWord(wordInfo || {})}
-      >
-        Create Word
-      </button>
+          <DeckList
+            decks={decks}
+            selectedDeckId={selectedDeckId}
+            onSelectDeck={handleSelectDeck}
+            openCreateDeckModal={() => setIsOpen(true)}
+          />
+          <CreateDeck isOpen={isOpen} onClose={() => setIsOpen(false)} />
+        </div>
+      </main>
     </>
   )
 }
