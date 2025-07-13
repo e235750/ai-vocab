@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
-from datatime import datetime
+from datetime import datetime
 
 class ExampleSentence(BaseModel):
     """

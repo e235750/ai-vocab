@@ -48,18 +48,20 @@ export default function CardViewer({
             {currentIndex + 1}/{totalCards}
           </span>
         </div>
-        <span
+        <button
           className="text-3xl text-gray-600 cursor-pointer material-symbols-outlined"
           onClick={handlePrev}
+          aria-label="Previous card"
         >
           <FaArrowLeft />
-        </span>
-        <span
+        </button>
+        <button
           className="text-3xl text-gray-600 cursor-pointer material-symbols-outlined"
           onClick={handleNext}
+          aria-label="Next card"
         >
           <FaArrowRight />
-        </span>
+        </button>
       </div>
       <div className="flex gap-3">
         <button className="px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100">
