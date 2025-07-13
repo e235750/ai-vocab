@@ -1,5 +1,6 @@
 from pydantic import BaseModel, Field
 from typing import Optional, List
+import datetime
 
 class ExampleSentence(BaseModel):
     """
@@ -63,11 +64,11 @@ class FDAData(BaseModel):
     FreeDictionaryAPIから取得した単語データ全体のスキーマ
     """
     word: str
-    phonetic: Optional[str] = None # 主要な発音記号（テキスト）
-    phonetics: List[PhoneticInfo] = [] # 複数の発音情報（音声URLを含む）
+    phonetic: Optional[str] = None
+    phonetics: List[PhoneticInfo] = []
     meanings: List[Meaning] = []
     license: Optional[License] = None
-    sourceUrls: List[str] = [] # FreeDictionaryAPIの出力にあるため追加
+    sourceUrls: List[str] = []
 
 
 # -------------------------------------------------
@@ -76,14 +77,15 @@ class FDAData(BaseModel):
 
 class WordRequest(BaseModel):
     """
-    単語作成時のリクエストボディのスキーマ
+    単語カード作成時のリクエストボディのスキーマ
     """
     english: str
     definitions: List[Definition] = Field(..., description="品詞と日本語訳のペアのリスト")
     synonyms: Optional[List[str]] = Field(None, description="類義語のリスト")
     example_sentences: Optional[List[ExampleSentence]] = Field(None, description="例文のリスト")
-    # audioフィールドを削除し、phoneticsに統合
-    phonetics: Optional[PhoneticInfo] = Field(None, description="発音記号と音声データのオブジェクト") # PhoneticsをPhoneticInfoに統一
+    phonetics: Optional[PhoneticInfo] = Field(None, description="発音記号と音声データのオブジェクト")
+    owner_id: str = Field(None, description="所有者のユーザID (オプション)")
+    wordbook_id: str = Field(None, description="単語帳ID (オプション)")
 
     class Config:
         json_schema_extra = {
@@ -110,11 +112,13 @@ class WordRequest(BaseModel):
                         "japanese": "もう一つ例を挙げさせてください。"
                     }
                 ],
-                "phonetics": { # PhoneticsをPhoneticInfoに統一
+                "phonetics": {
                     "text": "/ˈɛɡzæmpəl/",
                     "audio": "https://example.com/audio/example.mp3",
-                    "sourceUrl": "https://example.com/source/example.html" # FreeDictionaryAPIのsourceUrlを反映
-                }
+                    "sourceUrl": "https://example.com/source/example.html"
+                },
+                "owner_id": "user123",
+                "wordbook_id": "wordbook456"
             }
         }
 
@@ -126,7 +130,11 @@ class WordResponse(BaseModel):
     definitions: List[Definition] = Field(..., description="品詞と日本語訳のペアのリスト")
     synonyms: Optional[List[str]] = Field(None, description="類義語のリスト")
     example_sentences: Optional[List[ExampleSentence]] = Field(None, description="例文オブジェクトのリスト")
-    phonetics: Optional[PhoneticInfo] = Field(None, description="発音記号と音声データのオブジェクト") # PhoneticsをPhoneticInfoに統一
+    phonetics: Optional[PhoneticInfo] = Field(None, description="発音記号と音声データのオブジェクト")
+    owner_id: str = Field(None, description="所有者のユーザID (オプション)")
+    wordbook_id: str = Field(None, description="単語帳ID (オプション)")
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         json_schema_extra = {
@@ -153,11 +161,13 @@ class WordResponse(BaseModel):
                         "japanese": "もう一つ例を挙げさせてください。"
                     }
                 ],
-                "phonetics": { # PhoneticsをPhoneticInfoに統一
+                "phonetics": {
                     "text": "/ˈɛɡzæmpəl/",
                     "audio": "https://example.com/audio/example.mp3",
-                    "sourceUrl": "https://example.com/source/example.html" # FreeDictionaryAPIのsourceUrlを反映
-                }
+                    "sourceUrl": "https://example.com/source/example.html"
+                },
+                "owner_id": "user123",
+                "wordbook_id": "wordbook456"
             }
         }
 
