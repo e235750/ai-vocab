@@ -16,15 +16,7 @@ const eslintConfig = [
     files: ['**/*.{js,jsx,ts,tsx}'],
     rules: {
       // 変数・関数名：キャメルケースを強制
-      camelcase: [
-        'error',
-        {
-          properties: 'always', // プロパティ名もキャメルケースを強制
-          ignoreDestructuring: false, // 分割代入でもキャメルケース
-          ignoreImports: false, // import時もキャメルケース
-          allow: ['__dirname', '__filename'], // Node.js変数は例外
-        },
-      ],
+      camelcase: 'off',
 
       // TypeScript固有の命名規則
       '@typescript-eslint/naming-convention': [

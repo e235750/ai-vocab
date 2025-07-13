@@ -1,4 +1,4 @@
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, status, Depends
 from firebase_admin import firestore
 from datetime import datetime
 from uuid import uuid4
@@ -17,19 +17,22 @@ async def create_word(request: WordRequest, db: firestore.Client = Depends(get_d
 
     now = datetime.now()
     word_data = {
-    "id": str(uuid4()),
-    "english": request.english,
-    "definitions": [definition.model_dump() for definition in request.definitions],
-    "synonyms": request.synonyms,
-    "example_sentences": [sentence.model_dump() for sentence in request.example_sentences] if request.example_sentences else [],
-    "phonetics": request.phonetics.model_dump() if request.phonetics else None,
-    "created_at": now,
-    "updated_at": now
-}
+        "id": str(uuid4()),
+        "english": request.english,
+        "definitions": [definition.model_dump() for definition in request.definitions],
+        "synonyms": request.synonyms,
+        "example_sentences": [sentence.model_dump() for sentence in request.example_sentences] if request.example_sentences else [],
+        "phonetics": request.phonetics.model_dump() if request.phonetics else None,
+        "owner_id": request.owner_id,
+        "wordbook_id": request.wordbook_id,
+        "created_at": now,
+        "updated_at": now
+    }
 
     doc_ref = db.collection("words").document(word_data["id"])
     doc_ref.set(word_data)
     return word_data
+
 
 @router.post(
     "/info",
