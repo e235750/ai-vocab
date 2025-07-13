@@ -5,7 +5,6 @@ from uuid import uuid4
 
 from app.core.firebase import get_db
 from ...schemas.words import WordRequest, WordResponse, WordsInfoRequest
-from ...schemas.wordbooks import WordBook
 from ...services.words import generate_enhanced_word_info, get_dictionary_data_for_word, get_word_info_from_free_dictionary
 
 router = APIRouter()
