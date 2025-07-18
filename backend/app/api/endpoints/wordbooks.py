@@ -23,7 +23,7 @@ async def create_wordbook(request: WordBook, db: firestore.Client = Depends(get_
         "name": request.name,
         "owner_id": uid,
         "is_public": request.is_public,
-        "num_words": request.num_words,
+        "num_words": 0,
         "description": request.description,
         "created_at": now,
         "updated_at": now

@@ -15,10 +15,21 @@ async def create_word(request: WordRequest, db: firestore.Client = Depends(get_d
     """
     単語情報をデータベースに保存するエンドポイント
     """
+    wordbook_ref = db.collection("wordbooks").document(request.wordbook_id)
+    wordbook_doc = wordbook_ref.get()
+
+    if not wordbook_doc.exists:
+        raise HTTPException(status_code=404, detail="Wordbook not found")
+
+    batch = db.batch()
+
+    batch.update(wordbook_ref, {"num_words": firestore.Increment(1)})
 
     now = datetime.now()
+    word_id = str(uuid4())
+    word_ref = db.collection("words").document(word_id)
     word_data = {
-        "id": str(uuid4()),
+        "id": word_id,
         "english": request.english,
         "definitions": [definition.model_dump() for definition in request.definitions],
         "synonyms": request.synonyms,
@@ -29,9 +40,10 @@ async def create_word(request: WordRequest, db: firestore.Client = Depends(get_d
         "created_at": now,
         "updated_at": now
     }
+    batch.set(word_ref, word_data)
 
-    doc_ref = db.collection("words").document(word_data["id"])
-    doc_ref.set(word_data)
+    batch.commit()
+
     return word_data
 
 
