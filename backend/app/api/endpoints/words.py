@@ -4,13 +4,14 @@ from datetime import datetime
 from uuid import uuid4
 
 from app.core.firebase import get_db
+from app.core.security import get_current_user_uid
 from ...schemas.words import WordRequest, WordResponse, WordsInfoRequest
 from ...services.words import generate_enhanced_word_info, get_dictionary_data_for_word, get_word_info_from_free_dictionary
 
 router = APIRouter()
 
-@router.post("/word", response_model=WordResponse, status_code=status.HTTP_201_CREATED)
-async def create_word(request: WordRequest, db: firestore.Client = Depends(get_db)):
+@router.post("/", response_model=WordResponse, status_code=status.HTTP_201_CREATED)
+async def create_word(request: WordRequest, db: firestore.Client = Depends(get_db), uid: str = Depends(get_current_user_uid)):
     """
     単語情報をデータベースに保存するエンドポイント
     """
@@ -23,7 +24,7 @@ async def create_word(request: WordRequest, db: firestore.Client = Depends(get_d
         "synonyms": request.synonyms,
         "example_sentences": [sentence.model_dump() for sentence in request.example_sentences] if request.example_sentences else [],
         "phonetics": request.phonetics.model_dump() if request.phonetics else None,
-        "owner_id": request.owner_id,
+        "owner_id": uid,
         "wordbook_id": request.wordbook_id,
         "created_at": now,
         "updated_at": now
