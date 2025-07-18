@@ -7,6 +7,7 @@ import DeckList from '@/components/wordBook/DeckList'
 import CreateDeck from '@/components/wordBook/CreateDeck'
 import AddCardForm from '@/components/addCardForm/AddCardForm'
 import { auth } from '@/lib/firebase/config'
+import { getIdToken } from '@/lib/firebase/auth'
 import { Deck, Card, NewCard } from '@/types'
 import { addCard, getOwnedWordbooks, getWordsInWordbook } from '@/lib/api/db'
 
@@ -49,9 +50,8 @@ export default function HomePage() {
   }
 
   const onClose = async () => {
-    const user = auth.currentUser
-    if (!user) return
-    const idToken = await user.getIdToken()
+    const idToken = await getIdToken()
+    if (!idToken) return
     setIsOpen(false)
     try {
       const fetchDecks = await getOwnedWordbooks(idToken)
@@ -62,9 +62,8 @@ export default function HomePage() {
   }
 
   const fetchDecks = async () => {
-    const user = auth.currentUser
-    if (!user) return
-    const idToken = await user.getIdToken()
+    const idToken = await getIdToken()
+    if (!idToken) return
     try {
       setIsFetchingDecks(true)
       const fetchedDecks = await getOwnedWordbooks(idToken)
@@ -81,9 +80,8 @@ export default function HomePage() {
   const fetchWordsInDeck = async (deckId: string) => {
     if (!deckId) return
 
-    const user = auth.currentUser
-    if (!user) return
-    const idToken = await user.getIdToken()
+    const idToken = await getIdToken()
+    if (!idToken) return
     try {
       const fetchedWords = await getWordsInWordbook(deckId, idToken)
       setCachedCards((prev) => ({

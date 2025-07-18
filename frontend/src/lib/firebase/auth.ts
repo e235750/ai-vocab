@@ -88,3 +88,24 @@ export const deleteUser = async () => {
     throw new Error('No user is currently signed in.')
   }
 }
+
+/**
+ * 現在ログインしているユーザーのIDトークンを取得する
+ * @returns {Promise<string | null>}
+ */
+export const getIdToken = async (): Promise<string | null> => {
+  const user = auth.currentUser
+
+  if (!user) {
+    console.log('User is not authenticated.')
+    return null
+  }
+
+  try {
+    const idToken = await user.getIdToken()
+    return idToken
+  } catch (error) {
+    console.error('Error getting ID token:', error)
+    return null
+  }
+}

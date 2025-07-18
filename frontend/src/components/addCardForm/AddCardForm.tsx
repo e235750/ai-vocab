@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { FaChevronRight, FaChevronUp, FaPlus } from 'react-icons/fa'
 import { NewCard, Definition, ExampleSentence } from '@/types'
-import { auth } from '@/lib/firebase/config'
+import { getIdToken } from '@/lib/firebase/auth'
 
 import DefinitionEditor from './DefinitionEditor'
 import ExampleSentenceEditor from './ExampleSentenceEditor'
@@ -65,8 +65,9 @@ export default function AddCardForm({
       phonetics: { text: '', audio: '', sourceUrl: '' },
       wordbook_id: selectedDeckId,
     }
-    const user = auth.currentUser
-    const idToken = user ? await user.getIdToken() : ''
+
+    const idToken = await getIdToken()
+    if (!idToken) return
     onAddCard(newCardData, idToken)
 
     setEnglish('')
@@ -91,8 +92,9 @@ export default function AddCardForm({
       phonetics: { text: '', audio: '', sourceUrl: '' },
       wordbook_id: selectedDeckId,
     }
-    const user = auth.currentUser
-    const idToken = user ? await user.getIdToken() : ''
+
+    const idToken = await getIdToken()
+    if (!idToken) return
     onAddCard(newCardData, idToken)
 
     setIsExpanded(false)
