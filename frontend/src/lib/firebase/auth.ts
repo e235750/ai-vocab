@@ -97,7 +97,7 @@ export const getIdToken = async (): Promise<string | null> => {
   const user = auth.currentUser
 
   if (!user) {
-    console.log('User is not authenticated.')
+    console.error('User is not authenticated.')
     return null
   }
 
