@@ -1,7 +1,7 @@
 import { useState, FormEvent } from 'react'
 import { DeckData } from '@/types'
 import { addWordbook } from '@/lib/api/db'
-import { auth } from '@/lib/firebase/config'
+import { getIdToken } from '@/lib/firebase/auth'
 
 type CreateDeckProps = {
   isOpen: boolean
@@ -25,12 +25,8 @@ export default function CreateDeck({ isOpen, onClose }: CreateDeckProps) {
       num_words: 0,
     }
 
-    const user = auth.currentUser
-    if (!user) {
-      console.error('User is not authenticated')
-      return
-    }
-    const idToken = user ? await user.getIdToken() : ''
+    const idToken = await getIdToken()
+    if (!idToken) return
     addWordbook(data, idToken)
     onClose()
     setDeckName('')
