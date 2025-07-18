@@ -1,15 +1,19 @@
-import DeckItem, { type Deck } from './DeckItem.tsx'
+import DeckItem from './DeckItem'
+import Loading from '@/components/Loading'
+import { Deck } from '@/types'
 
 type DeckListProps = {
   decks: Deck[]
-  selectedDeckId: number
-  onSelectDeck: (id: number) => void
+  selectedDeckId: string
+  isFetchingDecks: boolean
+  onSelectDeck: (id: string) => void
   openCreateDeckModal: () => void
 }
 
 export default function DeckList({
   decks,
   selectedDeckId,
+  isFetchingDecks,
   onSelectDeck,
   openCreateDeckModal,
 }: DeckListProps) {
@@ -24,16 +28,38 @@ export default function DeckList({
           新規作成
         </button>
       </div>
-      <ul className="flex flex-col gap-2.5">
-        {decks.map((deck) => (
-          <DeckItem
-            key={deck.id}
-            deck={deck}
-            isActive={deck.id === selectedDeckId}
-            onSelect={onSelectDeck}
+
+      {/* 状態に応じて表示を切り替えるコンテナ */}
+      <div className="min-h-[100px] flex flex-col justify-center">
+        {isFetchingDecks ? (
+          // ローディング中の表示
+          <Loading
+            className="h-10 w-60 m-auto pl-10"
+            message="読み込み中..."
+            svgClassName="h-12 w-12"
+            textClassName="text-xl w-full"
           />
-        ))}
-      </ul>
+        ) : decks.length === 0 ? (
+          <div className="text-center">
+            <p className="text-sm text-gray-500">単語帳がありません。</p>
+            <p className="mt-1 text-sm text-gray-500">
+              「新規作成」ボタンから新しい単語帳を作成してください。
+            </p>
+          </div>
+        ) : (
+          // 単語帳リストの表示
+          <ul className="flex flex-col gap-2.5">
+            {decks.map((deck) => (
+              <DeckItem
+                key={deck.id}
+                deck={deck}
+                isActive={deck.id === selectedDeckId}
+                onSelect={onSelectDeck}
+              />
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   )
 }

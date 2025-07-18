@@ -1,12 +1,12 @@
 from pydantic import BaseModel, Field
 from typing import Optional
+from datetime import datetime
 
 class WordBook(BaseModel):
     """
     単語帳のスキーマ
     """
     name: str = Field(..., description="単語帳の名前")
-    owner_id: str = Field(..., description="所有者のユーザID")
     is_public: bool = Field(..., description="単語帳が公開されているかどうか")
     num_words: int = Field(..., description="単語帳に含まれる単語の数")
     description: Optional[str] = Field(None, description="単語帳の説明")
@@ -15,9 +15,33 @@ class WordBook(BaseModel):
         json_schema_extra = {
             "example": {
                 "name": "英単語帳",
-                "owner_id": "user123",
                 "is_public": True,
                 "num_words": 50,
                 "description": "英語の単語を学ぶための単語帳"
+            }
+        }
+
+class WordBookResponse(WordBook):
+    """
+    単語帳のレスポンススキーマ
+    """
+    id: str = Field(..., description="単語帳のID")
+    name: str = Field(..., description="単語帳の名前")
+    is_public: bool = Field(..., description="単語帳が公開されているかどうか")
+    num_words: int = Field(..., description="単語帳に含まれる単語の数")
+    description: Optional[str] = Field(None, description="単語帳の説明")
+    created_at: datetime = Field(..., description="作成日時")
+    updated_at: datetime = Field(..., description="更新日時")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "id": "wordbook123",
+                "name": "英単語帳",
+                "is_public": True,
+                "num_words": 50,
+                "description": "英語の単語を学ぶための単語帳",
+                "created_at": datetime(2023, 10, 1, 12, 0, 0),
+                "updated_at": datetime(2023, 10, 1, 12, 0, 0)
             }
         }

@@ -124,14 +124,14 @@ class WordRequest(BaseModel):
 
 class WordResponse(BaseModel):
     """
-    単語作成時のレスポンスボディのスキーマ
+    単語取得時のレスポンスボディのスキーマ
     """
+    id: str = Field(..., description="単語のID")
     english: str
     definitions: List[Definition] = Field(..., description="品詞と日本語訳のペアのリスト")
     synonyms: Optional[List[str]] = Field(None, description="類義語のリスト")
     example_sentences: Optional[List[ExampleSentence]] = Field(None, description="例文オブジェクトのリスト")
     phonetics: Optional[PhoneticInfo] = Field(None, description="発音記号と音声データのオブジェクト")
-    owner_id: str = Field(None, description="所有者のユーザID (オプション)")
     wordbook_id: str = Field(None, description="単語帳ID (オプション)")
     created_at: datetime
     updated_at: datetime
@@ -139,6 +139,7 @@ class WordResponse(BaseModel):
     class Config:
         json_schema_extra = {
             "example": {
+                "id": "card123",
                 "english": "example",
                 "definitions": [
                     {
@@ -166,8 +167,9 @@ class WordResponse(BaseModel):
                     "audio": "https://example.com/audio/example.mp3",
                     "sourceUrl": "https://example.com/source/example.html"
                 },
-                "owner_id": "user123",
-                "wordbook_id": "wordbook456"
+                "wordbook_id": "wordbook456",
+                "created_at": "2023-10-01T12:00:00Z",
+                "updated_at": "2023-10-01T12:00:00Z",
             }
         }
 

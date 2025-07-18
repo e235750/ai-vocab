@@ -8,6 +8,12 @@ import {
 import { FirebaseError } from 'firebase/app'
 import { auth } from './config'
 
+/**
+ * ユーザーを登録する関数
+ * @param email
+ * @param password
+ * @returns
+ */
 export const register = async (email: string, password: string) => {
   try {
     await createUserWithEmailAndPassword(auth, email, password)
@@ -22,6 +28,12 @@ export const register = async (email: string, password: string) => {
   }
 }
 
+/**
+ * ユーザーをサインインする関数
+ * @param email
+ * @param password
+ * @returns
+ */
 export const signIn = async (email: string, password: string) => {
   try {
     return await signInWithEmailAndPassword(auth, email, password)
@@ -31,6 +43,9 @@ export const signIn = async (email: string, password: string) => {
   }
 }
 
+/**
+ * ユーザーをログアウトする関数
+ */
 export const logout = async () => {
   try {
     await signOut(auth)
@@ -40,6 +55,10 @@ export const logout = async () => {
   }
 }
 
+/**
+ * Googleでサインインする関数
+ * @returns
+ */
 export const signInWithGoogle = async () => {
   const provider = new GoogleAuthProvider()
   try {
@@ -50,6 +69,10 @@ export const signInWithGoogle = async () => {
   }
 }
 
+/**
+ * 現在サインインしているユーザーをログアウトする関数
+ * @returns
+ */
 export const deleteUser = async () => {
   const user = auth.currentUser
   if (user) {

@@ -1,73 +1,167 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Header from '@/components/Header'
 import CardViewer from '@/components/CardViewer'
 import DeckList from '@/components/wordBook/DeckList'
 import CreateDeck from '@/components/wordBook/CreateDeck'
-import { type Deck } from '@/components/wordBook/DeckItem'
-
-// ダミーデータは同じ
-const initialDecks: Deck[] = [
-  {
-    id: 1,
-    name: 'TOEIC頻出単語',
-    cards: [
-      { id: 101, word: 'example', definition: '...' },
-      { id: 102, word: 'test', definition: '...' },
-    ],
-  },
-  {
-    id: 2,
-    name: 'ビジネス英会話',
-    cards: [{ id: 201, word: 'negotiate', definition: '...' } /* ... */],
-  },
-]
+import AddCardForm from '@/components/addCardForm/AddCardForm'
+import { auth } from '@/lib/firebase/config'
+import { Deck, Card, NewCard } from '@/types'
+import { addCard, getOwnedWordbooks, getWordsInWordbook } from '@/lib/api/db'
 
 export default function HomePage() {
-  const [decks, setDecks] = useState<Deck[]>(initialDecks)
-  const [selectedDeckId, setSelectedDeckId] = useState<number>(1)
-  const [currentCardIndex, setCurrentCardIndex] = useState<number>(0)
+  const [decks, setDecks] = useState<Deck[]>([])
+  const [cachedCards, setCachedCards] = useState<Record<string, Card[]>>({})
+  const [selectedDeckId, setSelectedDeckId] = useState<string>('')
+  const [currentCardIndexes, setCurrentCardIndexes] = useState<
+    Record<string, number>
+  >({})
   const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [isFetchingDecks, setIsFetchingDecks] = useState<boolean>(false)
+  const [isCreatingCard, setIsCreatingCard] = useState<boolean>(false)
 
   const selectedDeck = decks.find((deck) => deck.id === selectedDeckId)
-  const currentCard = selectedDeck?.cards[currentCardIndex]
+  const currentCards = cachedCards[selectedDeckId] || []
+  const currentCardIndex = currentCardIndexes[selectedDeckId] || 0
 
-  const handleSelectDeck = (deckId: number) => {
+  const handleSelectDeck = (deckId: string) => {
     setSelectedDeckId(deckId)
-    setCurrentCardIndex(0)
+    if (!cachedCards[deckId]) {
+      fetchWordsInDeck(deckId)
+    }
   }
 
   const handleNavigateCard = (newIndex: number) => {
-    setCurrentCardIndex(newIndex)
+    setCurrentCardIndexes((prev) => ({ ...prev, [selectedDeckId]: newIndex }))
   }
+
+  const handleAddCard = async (newCard: NewCard, idToken: string) => {
+    if (selectedDeckId) {
+      try {
+        await addCard(newCard, idToken)
+        await fetchDecks()
+        await fetchWordsInDeck(selectedDeckId)
+      } catch (error) {
+        console.error('カードの追加または再取得に失敗しました:', error)
+      }
+    }
+  }
+
+  const onClose = async () => {
+    const user = auth.currentUser
+    if (!user) return
+    const idToken = await user.getIdToken()
+    setIsOpen(false)
+    try {
+      const fetchDecks = await getOwnedWordbooks(idToken)
+      setDecks(fetchDecks)
+    } catch (error) {
+      console.error('デッキの再取得に失敗しました:', error)
+    }
+  }
+
+  const fetchDecks = async () => {
+    const user = auth.currentUser
+    if (!user) return
+    const idToken = await user.getIdToken()
+    try {
+      setIsFetchingDecks(true)
+      const fetchedDecks = await getOwnedWordbooks(idToken)
+      setDecks(fetchedDecks)
+
+      return fetchedDecks
+    } catch (error) {
+      console.error('Error fetching decks:', error)
+    } finally {
+      setIsFetchingDecks(false)
+    }
+  }
+
+  const fetchWordsInDeck = async (deckId: string) => {
+    if (!deckId) return
+
+    const user = auth.currentUser
+    if (!user) return
+    const idToken = await user.getIdToken()
+    try {
+      const fetchedWords = await getWordsInWordbook(deckId, idToken)
+      setCachedCards((prev) => ({
+        ...prev,
+        [deckId]: fetchedWords,
+      }))
+    } catch (error) {
+      console.error('Error fetching words:', error)
+      setCachedCards((prev) => ({ ...prev, [deckId]: [] }))
+    }
+  }
+
+  useEffect(() => {
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        const firstFetchDecks = async () => {
+          try {
+            const fetchedDecks = await fetchDecks()
+            if (fetchedDecks.length > 0) {
+              const firstDeckId = fetchedDecks[0].id
+              setSelectedDeckId(firstDeckId)
+            }
+          } catch (error) {
+            console.error('Error during initial fetch:', error)
+          }
+        }
+        firstFetchDecks()
+      } else {
+        setDecks([])
+        setCachedCards({})
+        setSelectedDeckId('')
+        setCurrentCardIndexes({})
+        console.log('User is not authenticated, resetting state')
+      }
+    })
+    return () => unsubscribe()
+  }, [])
+
+  useEffect(() => {
+    if (selectedDeckId && !cachedCards[selectedDeckId]) {
+      fetchWordsInDeck(selectedDeckId)
+    }
+  }, [selectedDeckId, cachedCards])
 
   return (
     <>
       <Header />
       <main className="max-w-4xl mx-auto mt-5">
         <div className="flex flex-col gap-8">
-          {selectedDeck && currentCard ? (
+          {selectedDeckId ? (
             <CardViewer
-              deckName={selectedDeck.name}
-              currentCard={currentCard}
-              totalCards={selectedDeck.cards.length}
+              deckName={selectedDeck?.name || 'Loading...'}
+              cards={currentCards}
+              totalCards={currentCards.length}
               currentIndex={currentCardIndex}
+              isCreatingCard={isCreatingCard}
               onNavigate={handleNavigateCard}
+              setIsCreatingCard={setIsCreatingCard}
             />
           ) : (
             <div className="p-6 text-center bg-white border border-gray-300 rounded-xl">
               単語帳を選択してください。
             </div>
           )}
-
+          {selectedDeckId && isCreatingCard && (
+            <AddCardForm
+              selectedDeckId={selectedDeckId}
+              onAddCard={handleAddCard}
+            />
+          )}
           <DeckList
             decks={decks}
             selectedDeckId={selectedDeckId}
+            isFetchingDecks={isFetchingDecks}
             onSelectDeck={handleSelectDeck}
             openCreateDeckModal={() => setIsOpen(true)}
           />
-          <CreateDeck isOpen={isOpen} onClose={() => setIsOpen(false)} />
+          <CreateDeck isOpen={isOpen} onClose={onClose} />
         </div>
       </main>
     </>

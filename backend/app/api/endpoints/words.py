@@ -4,33 +4,46 @@ from datetime import datetime
 from uuid import uuid4
 
 from app.core.firebase import get_db
+from app.core.security import get_current_user_uid
 from ...schemas.words import WordRequest, WordResponse, WordsInfoRequest
 from ...services.words import generate_enhanced_word_info, get_dictionary_data_for_word, get_word_info_from_free_dictionary
 
 router = APIRouter()
 
-@router.post("/word", response_model=WordResponse, status_code=status.HTTP_201_CREATED)
-async def create_word(request: WordRequest, db: firestore.Client = Depends(get_db)):
+@router.post("/", response_model=WordResponse, status_code=status.HTTP_201_CREATED)
+async def create_word(request: WordRequest, db: firestore.Client = Depends(get_db), uid: str = Depends(get_current_user_uid)):
     """
     単語情報をデータベースに保存するエンドポイント
     """
+    wordbook_ref = db.collection("wordbooks").document(request.wordbook_id)
+    wordbook_doc = wordbook_ref.get()
+
+    if not wordbook_doc.exists:
+        raise HTTPException(status_code=404, detail="Wordbook not found")
+
+    batch = db.batch()
+
+    batch.update(wordbook_ref, {"num_words": firestore.Increment(1)})
 
     now = datetime.now()
+    word_id = str(uuid4())
+    word_ref = db.collection("words").document(word_id)
     word_data = {
-        "id": str(uuid4()),
+        "id": word_id,
         "english": request.english,
         "definitions": [definition.model_dump() for definition in request.definitions],
         "synonyms": request.synonyms,
         "example_sentences": [sentence.model_dump() for sentence in request.example_sentences] if request.example_sentences else [],
         "phonetics": request.phonetics.model_dump() if request.phonetics else None,
-        "owner_id": request.owner_id,
+        "owner_id": uid,
         "wordbook_id": request.wordbook_id,
         "created_at": now,
         "updated_at": now
     }
+    batch.set(word_ref, word_data)
 
-    doc_ref = db.collection("words").document(word_data["id"])
-    doc_ref.set(word_data)
+    batch.commit()
+
     return word_data
 
 
