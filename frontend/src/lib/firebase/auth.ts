@@ -44,8 +44,7 @@ export const signIn = async (email: string, password: string) => {
 }
 
 /**
- * 現在のユーザーを取得する関数
- * @returns
+ * ユーザーをログアウトする関数
  */
 export const logout = async () => {
   try {
@@ -71,7 +70,7 @@ export const signInWithGoogle = async () => {
 }
 
 /**
- * 現在のユーザーを取得する関数
+ * 現在サインインしているユーザーをログアウトする関数
  * @returns
  */
 export const deleteUser = async () => {

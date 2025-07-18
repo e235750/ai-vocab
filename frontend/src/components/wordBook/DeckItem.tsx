@@ -17,7 +17,9 @@ export default function DeckItem({ deck, isActive, onSelect }: DeckItemProps) {
       onClick={() => onSelect(deck.id)}
     >
       <span className="font-medium">{deck.name}</span>
-      <span className="px-3 py-1 text-sm bg-gray-200 rounded-full">100</span>
+      <span className="px-3 py-1 text-sm bg-gray-200 rounded-full">
+        {deck.num_words}
+      </span>
     </li>
   )
 }

@@ -48,8 +48,19 @@ export interface DeckData {
 }
 
 // 単語帳の型定義
+// "id": "wordbook123",
+// "name": "英単語帳",
+// "is_public": True,
+// "num_words": 50,
+// "description": "英語の単語を学ぶための単語帳",
+// "created_at": datetime(2023, 10, 1, 12, 0, 0),
+// "updated_at": datetime(2023, 10, 1, 12, 0, 0)
 export interface Deck {
   id: string
   name: string
-  cards: { id: string; word: string; definition: string }[]
+  is_public: boolean
+  num_words: number
+  description?: string
+  created_at: string
+  updated_at: string
 }

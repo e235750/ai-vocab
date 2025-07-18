@@ -6,7 +6,9 @@ type CardViewerProps = {
   cards: Card[]
   totalCards: number
   currentIndex: number
+  isCreatingCard: boolean
   onNavigate: (newIndex: number) => void
+  setIsCreatingCard: (isCreating: boolean) => void
 }
 
 export default function CardViewer({
@@ -14,7 +16,9 @@ export default function CardViewer({
   cards,
   totalCards,
   currentIndex,
+  isCreatingCard,
   onNavigate,
+  setIsCreatingCard,
 }: CardViewerProps) {
   const currentCard = cards[currentIndex]
 
@@ -24,6 +28,10 @@ export default function CardViewer({
 
   const handleNext = () => {
     if (currentIndex < totalCards - 1) onNavigate(currentIndex + 1)
+  }
+
+  const handleCreateNewCard = () => {
+    setIsCreatingCard(!isCreatingCard)
   }
 
   return (
@@ -69,7 +77,14 @@ export default function CardViewer({
         <button className="px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100">
           編集
         </button>
-        <button className="px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100">
+        <button
+          className={`px-6 py-2 text-base border border-gray-300 rounded-md hover:bg-gray-100 ${
+            isCreatingCard
+              ? 'bg-indigo-50 border-indigo-400'
+              : 'bg-white border-gray-300 hover:bg-gray-50'
+          }`}
+          onClick={handleCreateNewCard}
+        >
           新規作成
         </button>
         <button className="px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100">
