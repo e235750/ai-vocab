@@ -21,6 +21,15 @@ const eslintConfig = [
       // TypeScript固有の命名規則
       '@typescript-eslint/naming-convention': [
         'error',
+        {
+          // 'Content-Type' や 'Authorization' のような
+          // ハイフンを含むプロパティ名を許可するための設定
+          selector: 'property',
+          // このルールは引用符が必要なプロパティにのみ適用される
+          modifiers: ['requiresQuotes'],
+          // フォーマットのチェックを行わない
+          format: null,
+        },
         // 変数：キャメルケースまたは定数用大文字スネークケース
         {
           selector: 'variable',
@@ -42,7 +51,7 @@ const eslintConfig = [
         // プロパティ：キャメルケースまたはスネークケース（API対応）
         {
           selector: 'property',
-          format: ['camelCase', 'snake_case'],
+          format: ['camelCase', 'snake_case', 'PascalCase'],
           leadingUnderscore: 'allow',
         },
         // 型・インターフェース：パスカルケース

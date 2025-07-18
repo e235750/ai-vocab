@@ -17,6 +17,7 @@ export async function POST(request: Request) {
     return new Response(JSON.stringify(data), { status: 201 })
   } catch (error: unknown) {
     if (error instanceof Error) {
+      console.error('Error creating wordbook:', error.message)
       return new Response(JSON.stringify({ error: error.message }), {
         status: 500,
       })

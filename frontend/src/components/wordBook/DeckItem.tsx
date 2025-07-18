@@ -1,13 +1,9 @@
-export type Deck = {
-  id: number
-  name: string
-  cards: { id: number; word: string; definition: string }[]
-}
+import { Deck } from '@/types'
 
 type DeckItemProps = {
   deck: Deck
   isActive: boolean
-  onSelect: (id: number) => void
+  onSelect: (id: string) => void
 }
 
 export default function DeckItem({ deck, isActive, onSelect }: DeckItemProps) {
@@ -21,9 +17,7 @@ export default function DeckItem({ deck, isActive, onSelect }: DeckItemProps) {
       onClick={() => onSelect(deck.id)}
     >
       <span className="font-medium">{deck.name}</span>
-      <span className="px-3 py-1 text-sm bg-gray-200 rounded-full">
-        {deck.cards.length}
-      </span>
+      <span className="px-3 py-1 text-sm bg-gray-200 rounded-full">100</span>
     </li>
   )
 }

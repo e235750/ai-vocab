@@ -1,17 +1,11 @@
 import { useState, FormEvent } from 'react'
+import { DeckData } from '@/types'
+import { addWordbook } from '@/lib/api/db'
 import { auth } from '@/lib/firebase/config'
 
 type CreateDeckProps = {
   isOpen: boolean
   onClose: () => void
-}
-
-type DeckData = {
-  name: string
-  description?: string
-  is_public: boolean
-  owner_id: string
-  num_words: number
 }
 
 export default function CreateDeck({ isOpen, onClose }: CreateDeckProps) {
@@ -24,36 +18,24 @@ export default function CreateDeck({ isOpen, onClose }: CreateDeckProps) {
   }
 
   const registerDeck = async () => {
-    const user = auth.currentUser
-    if (!user) {
-      alert('ログインしてください。')
-      return
-    }
     const data: DeckData = {
       name: deckName,
       description: deckDescription,
       is_public: isPublic,
-      owner_id: user.uid,
       num_words: 0,
     }
 
-    try {
-      const response = await fetch('api/wordbooks', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      })
-
-      if (!response.ok) {
-        throw new Error('単語帳の作成に失敗しました。')
-      }
-
-      onClose()
-    } catch (error: unknown) {
-      console.error('Error creating deck:', error)
+    const user = auth.currentUser
+    if (!user) {
+      console.error('User is not authenticated')
+      return
     }
+    const idToken = user ? await user.getIdToken() : ''
+    addWordbook(data, idToken)
+    onClose()
+    setDeckName('')
+    setDeckDescription('')
+    setIsPublic(true)
   }
 
   const handleSubmit = (e: FormEvent) => {
@@ -133,7 +115,7 @@ export default function CreateDeck({ isOpen, onClose }: CreateDeckProps) {
                   onClick={() => setIsPublic(false)}
                   className={`w-full py-2 text-sm font-bold rounded-md transition-colors ${
                     !isPublic
-                      ? 'bg-white text-blue-600 shadow'
+                      ? 'bg-white text-red-600 shadow'
                       : 'bg-transparent text-gray-500 hover:bg-gray-300'
                   }`}
                 >

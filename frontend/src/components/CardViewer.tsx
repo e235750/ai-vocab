@@ -1,11 +1,9 @@
 import { FaArrowRight, FaArrowLeft } from 'react-icons/fa'
+import { Card } from '@/types'
 
 type CardViewerProps = {
   deckName: string
-  currentCard: {
-    id: number
-    word: string
-  }
+  cards: Card[]
   totalCards: number
   currentIndex: number
   onNavigate: (newIndex: number) => void
@@ -13,11 +11,13 @@ type CardViewerProps = {
 
 export default function CardViewer({
   deckName,
-  currentCard,
+  cards,
   totalCards,
   currentIndex,
   onNavigate,
 }: CardViewerProps) {
+  const currentCard = cards[currentIndex]
+
   const handlePrev = () => {
     if (currentIndex > 0) onNavigate(currentIndex - 1)
   }
@@ -30,8 +30,8 @@ export default function CardViewer({
     <section className="flex flex-col items-center p-6 bg-white border border-gray-300 rounded-xl">
       <h2 className="mb-4 text-base font-semibold text-gray-600">{deckName}</h2>
       <div className="flex items-center justify-center w-full h-[200px] mb-5 border border-gray-300 rounded-lg shadow-sm">
-        <p className="text-5xl font-bold">
-          {currentCard?.word || 'カードがありません'}
+        <p className="text-2xl font-bold text-gray-500">
+          {currentCard?.english || 'カードがありません'}
         </p>
       </div>
       <div className="flex items-center w-full gap-4 mb-5">
@@ -39,26 +39,28 @@ export default function CardViewer({
           <input
             type="range"
             min="0"
-            max={totalCards - 1}
+            max={totalCards > 0 ? totalCards - 1 : 0}
             value={currentIndex}
             className="w-full cursor-pointer"
             readOnly
           />
           <span>
-            {currentIndex + 1}/{totalCards}
+            {totalCards > 0 ? currentIndex + 1 : 0}/{totalCards}
           </span>
         </div>
         <button
-          className="text-3xl text-gray-600 cursor-pointer material-symbols-outlined"
+          className="text-3xl text-gray-600 cursor-pointer"
           onClick={handlePrev}
           aria-label="Previous card"
+          disabled={currentIndex === 0}
         >
           <FaArrowLeft />
         </button>
         <button
-          className="text-3xl text-gray-600 cursor-pointer material-symbols-outlined"
+          className="text-3xl text-gray-600 cursor-pointer"
           onClick={handleNext}
           aria-label="Next card"
+          disabled={currentIndex >= totalCards - 1}
         >
           <FaArrowRight />
         </button>
