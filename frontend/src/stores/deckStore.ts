@@ -30,7 +30,7 @@ export interface DeckActions {
 
 type DeckStore = DeckState & DeckActions
 
-// 4. 初期状態を定義
+// 初期状態を定義
 const initialState: DeckState = {
   decks: [],
   cachedCards: {},
