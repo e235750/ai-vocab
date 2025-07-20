@@ -1,48 +1,61 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Header from '@/components/Header'
 import CardViewer from '@/components/CardViewer'
 import DeckList from '@/components/wordBook/DeckList'
 import CreateDeck from '@/components/wordBook/CreateDeck'
 import AddCardForm from '@/components/addCardForm/AddCardForm'
 import { auth } from '@/lib/firebase/config'
 import { getIdToken } from '@/lib/firebase/auth'
-import { Deck, Card, NewCard } from '@/types'
-import { addCard, getOwnedWordbooks, getWordsInWordbook } from '@/lib/api/db'
+import { NewCard } from '@/types'
+import { addCard } from '@/lib/api/db'
+import { useDeckStore } from '@/stores/deckStore'
 
 export default function HomePage() {
-  const [decks, setDecks] = useState<Deck[]>([])
-  const [cachedCards, setCachedCards] = useState<Record<string, Card[]>>({})
-  const [selectedDeckId, setSelectedDeckId] = useState<string>('')
-  const [currentCardIndexes, setCurrentCardIndexes] = useState<
-    Record<string, number>
-  >({})
+  const {
+    decks,
+    cachedCards,
+    selectedDeckId,
+    currentCardIndexes,
+    loading,
+    selectDeck,
+    navigateCard,
+    reset,
+    fetchDecks: storeFetchDecks,
+    fetchWordsInDeck: storeFetchWordsInDeck,
+  } = useDeckStore()
+
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const [isFetchingDecks, setIsFetchingDecks] = useState<boolean>(false)
   const [isCreatingCard, setIsCreatingCard] = useState<boolean>(false)
 
   const selectedDeck = decks.find((deck) => deck.id === selectedDeckId)
   const currentCards = cachedCards[selectedDeckId] || []
   const currentCardIndex = currentCardIndexes[selectedDeckId] || 0
 
-  const handleSelectDeck = (deckId: string) => {
-    setSelectedDeckId(deckId)
+  const handleSelectDeck = async (deckId: string) => {
+    selectDeck(deckId)
     if (!cachedCards[deckId]) {
-      fetchWordsInDeck(deckId)
+      const idToken = await getIdToken()
+      if (idToken) {
+        try {
+          await storeFetchWordsInDeck(deckId, idToken)
+        } catch (error) {
+          console.error('Error fetching words:', error)
+        }
+      }
     }
   }
 
   const handleNavigateCard = (newIndex: number) => {
-    setCurrentCardIndexes((prev) => ({ ...prev, [selectedDeckId]: newIndex }))
+    navigateCard(newIndex)
   }
 
   const handleAddCard = async (newCard: NewCard, idToken: string) => {
     if (selectedDeckId) {
       try {
         await addCard(newCard, idToken)
-        await fetchDecks()
-        await fetchWordsInDeck(selectedDeckId)
+        await storeFetchDecks(idToken)
+        await storeFetchWordsInDeck(selectedDeckId, idToken)
       } catch (error) {
         console.error('カードの追加または再取得に失敗しました:', error)
       }
@@ -54,86 +67,56 @@ export default function HomePage() {
     if (!idToken) return
     setIsOpen(false)
     try {
-      const fetchDecks = await getOwnedWordbooks(idToken)
-      setDecks(fetchDecks)
+      await storeFetchDecks(idToken)
     } catch (error) {
       console.error('デッキの再取得に失敗しました:', error)
     }
   }
 
-  const fetchDecks = async () => {
-    const idToken = await getIdToken()
-    if (!idToken) return
-    try {
-      setIsFetchingDecks(true)
-      const fetchedDecks = await getOwnedWordbooks(idToken)
-      setDecks(fetchedDecks)
-
-      return fetchedDecks
-    } catch (error) {
-      console.error('Error fetching decks:', error)
-    } finally {
-      setIsFetchingDecks(false)
-    }
-  }
-
-  const fetchWordsInDeck = async (deckId: string) => {
-    if (!deckId) return
-
-    const idToken = await getIdToken()
-    if (!idToken) return
-    try {
-      const fetchedWords = await getWordsInWordbook(deckId, idToken)
-      setCachedCards((prev) => ({
-        ...prev,
-        [deckId]: fetchedWords,
-      }))
-    } catch (error) {
-      console.error('Error fetching words:', error)
-      setCachedCards((prev) => ({ ...prev, [deckId]: [] }))
-    }
-  }
-
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((user) => {
+    const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        const firstFetchDecks = async () => {
-          try {
-            const fetchedDecks = await fetchDecks()
-            if (fetchedDecks.length > 0) {
-              const firstDeckId = fetchedDecks[0].id
-              setSelectedDeckId(firstDeckId)
-            }
-          } catch (error) {
-            console.error('Error during initial fetch:', error)
+        try {
+          const idToken = await user.getIdToken()
+          const fetchedDecks = await storeFetchDecks(idToken)
+          if (fetchedDecks.length > 0) {
+            const firstDeckId = fetchedDecks[0].id
+            selectDeck(firstDeckId)
           }
+        } catch (error) {
+          console.error('Error during initial fetch:', error)
         }
-        firstFetchDecks()
       } else {
-        setDecks([])
-        setCachedCards({})
-        setSelectedDeckId('')
-        setCurrentCardIndexes({})
-        console.log('User is not authenticated, resetting state')
+        reset()
       }
     })
     return () => unsubscribe()
-  }, [])
+  }, [storeFetchDecks, selectDeck, reset])
 
   useEffect(() => {
     if (selectedDeckId && !cachedCards[selectedDeckId]) {
-      fetchWordsInDeck(selectedDeckId)
+      const fetchWords = async () => {
+        const idToken = await getIdToken()
+        if (idToken) {
+          try {
+            await storeFetchWordsInDeck(selectedDeckId, idToken)
+          } catch (error) {
+            console.error('Error fetching words:', error)
+          }
+        }
+      }
+      fetchWords()
     }
-  }, [selectedDeckId, cachedCards])
+  }, [selectedDeckId, cachedCards, storeFetchWordsInDeck])
 
   return (
     <>
-      <Header />
       <main className="max-w-4xl mx-auto mt-5">
         <div className="flex flex-col gap-8">
           {selectedDeckId ? (
             <CardViewer
               deckName={selectedDeck?.name || 'Loading...'}
+              selectedDeckId={selectedDeckId}
               cards={currentCards}
               totalCards={currentCards.length}
               currentIndex={currentCardIndex}
@@ -155,7 +138,7 @@ export default function HomePage() {
           <DeckList
             decks={decks}
             selectedDeckId={selectedDeckId}
-            isFetchingDecks={isFetchingDecks}
+            isFetchingDecks={loading}
             onSelectDeck={handleSelectDeck}
             openCreateDeckModal={() => setIsOpen(true)}
           />

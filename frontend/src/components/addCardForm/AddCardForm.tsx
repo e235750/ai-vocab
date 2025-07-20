@@ -2,7 +2,12 @@
 
 import { useState } from 'react'
 import { FaChevronRight, FaChevronUp, FaPlus } from 'react-icons/fa'
-import { NewCard, Definition, ExampleSentence } from '@/types'
+import {
+  NewCard,
+  Definition,
+  ExampleSentence,
+  partOfSpeechOptions,
+} from '@/types'
 import { getIdToken } from '@/lib/firebase/auth'
 
 import DefinitionEditor from './DefinitionEditor'
@@ -14,17 +19,6 @@ interface AddCardFormProps {
   selectedDeckId: string
 }
 
-const partOfSpeechOptions = [
-  'noun-名詞',
-  'verb-動詞',
-  'adjective-形容詞',
-  'adverb-副詞',
-  'pronoun-代名詞',
-  'preposition-前置詞',
-  'conjunction-接続詞',
-  'interjection-感動詞',
-]
-
 export default function AddCardForm({
   onAddCard,
   selectedDeckId,
@@ -32,9 +26,7 @@ export default function AddCardForm({
   const [isExpanded, setIsExpanded] = useState(false)
 
   const [english, setEnglish] = useState('')
-  const [definitions, setDefinitions] = useState<Definition[]>([
-    { part_of_speech: '', japanese: [''] },
-  ])
+  const [definitions, setDefinitions] = useState<Definition[]>([])
   const [synonyms, setSynonyms] = useState<string[]>([])
   const [exampleSentences, setExampleSentences] = useState<ExampleSentence[]>(
     []
@@ -148,6 +140,7 @@ export default function AddCardForm({
     meanings[defIndex] = ''
     setNewMeanings(meanings)
   }
+
   const handleRemoveMeaning = (defIndex: number, meaningIndex: number) => {
     const newDefs = [...definitions]
     newDefs[defIndex].japanese.splice(meaningIndex, 1)
