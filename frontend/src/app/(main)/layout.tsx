@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import { logout, deleteUser } from '@/lib/firebase/auth'
+import Header from '@/components/Header'
 
 export default function MainLayout({
   children,
@@ -28,6 +29,7 @@ export default function MainLayout({
   // ログイン済みの場合は子ページを表示
   return (
     <>
+      <Header />
       <button
         onClick={() => {
           logout()

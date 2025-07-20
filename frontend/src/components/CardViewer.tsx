@@ -3,6 +3,7 @@ import { Card } from '@/types'
 
 type CardViewerProps = {
   deckName: string
+  selectedDeckId: string
   cards: Card[]
   totalCards: number
   currentIndex: number
@@ -13,6 +14,7 @@ type CardViewerProps = {
 
 export default function CardViewer({
   deckName,
+  selectedDeckId,
   cards,
   totalCards,
   currentIndex,
@@ -87,9 +89,12 @@ export default function CardViewer({
         >
           新規作成
         </button>
-        <button className="px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100">
+        <a
+          href={`word-list/${selectedDeckId}`}
+          className="px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100"
+        >
           一覧
-        </button>
+        </a>
       </div>
     </section>
   )
