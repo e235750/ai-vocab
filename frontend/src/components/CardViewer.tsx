@@ -1,6 +1,7 @@
 import { FaArrowRight, FaArrowLeft } from 'react-icons/fa'
 import { Card } from '@/types'
 import Link from 'next/link'
+import { useState } from 'react'
 
 type CardViewerProps = {
   deckName: string
@@ -29,14 +30,21 @@ export default function CardViewer({
   setIsUpdatingCard,
   onDeleteCard,
 }: CardViewerProps) {
+  const [isFlipped, setIsFlipped] = useState(false)
   const currentCard = cards[currentIndex]
 
   const handlePrev = () => {
-    if (currentIndex > 0) onNavigate(currentIndex - 1)
+    if (currentIndex > 0) {
+      onNavigate(currentIndex - 1)
+      setIsFlipped(false) // カード切り替え時にフリップをリセット
+    }
   }
 
   const handleNext = () => {
-    if (currentIndex < totalCards - 1) onNavigate(currentIndex + 1)
+    if (currentIndex < totalCards - 1) {
+      onNavigate(currentIndex + 1)
+      setIsFlipped(false) // カード切り替え時にフリップをリセット
+    }
   }
 
   const handleCreateNewCard = () => {
@@ -45,6 +53,16 @@ export default function CardViewer({
 
   const handleUpdateCard = () => {
     setIsUpdatingCard(!isUpdatingCard)
+  }
+
+  const handleSliderChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newIndex = parseInt(e.target.value)
+    onNavigate(newIndex)
+    setIsFlipped(false) // スライダー操作時にフリップをリセット
+  }
+
+  const handleCardClick = () => {
+    setIsFlipped(!isFlipped)
   }
 
   const handleDeleteCard = () => {
@@ -62,78 +80,171 @@ export default function CardViewer({
   return (
     <section className="flex flex-col items-center p-6 bg-white border border-gray-300 rounded-xl">
       <h2 className="mb-4 text-base font-semibold text-gray-600">{deckName}</h2>
-      <div className="flex items-center justify-center w-full h-[200px] mb-5 border border-gray-300 rounded-lg shadow-sm">
-        <p className="text-2xl font-bold text-gray-500">
-          {currentCard?.english || 'カードがありません'}
-        </p>
+
+      {/* フリップカード */}
+      <div
+        className="relative w-full h-[300px] mb-5 perspective-1000 cursor-pointer"
+        onClick={handleCardClick}
+      >
+        <div
+          className={`absolute inset-0 w-full h-full transition-transform duration-300 transform-style-preserve-3d ${
+            isFlipped ? 'rotate-x-180' : ''
+          }`}
+        >
+          {/* 表面（英単語） */}
+          <div className="absolute inset-0 w-full h-full bg-white border border-gray-200 rounded-lg shadow-lg backface-hidden flex items-center justify-center">
+            <div className="text-center px-8">
+              <p className="text-4xl font-bold text-gray-800 mb-4 font-mono tracking-wide">
+                {currentCard?.english || 'カードがありません'}
+              </p>
+              {currentCard?.phonetics && (
+                <div className="flex flex-col items-center gap-3">
+                  <p className="text-lg text-gray-600 font-mono">
+                    {currentCard.phonetics.text}
+                  </p>
+                  <button 
+                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-md hover:shadow-lg" 
+                    aria-label="音声を聞く"
+                    onClick={(e) => {
+                      e.stopPropagation() // カードのフリップを防ぐ
+                      // TODO: 音声再生機能を実装
+                    }}
+                  >
+                    🔊
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* 裏面（詳細情報） */}
+          <div className="absolute inset-0 w-full h-full bg-white border border-gray-200 rounded-lg shadow-lg backface-hidden rotate-x-180 overflow-y-auto">
+            {currentCard ? (
+              <div className="p-6">
+                {/* ボディ */}
+                <main className="card-body">
+                  {/* 定義 */}
+                  {currentCard.definitions && currentCard.definitions.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2">定義</h3>
+                      {currentCard.definitions.map((def, index) => (
+                        <div key={index} className="mb-4">
+                          <p className="font-semibold text-gray-700 mb-2">{def.part_of_speech}</p>
+                          <ul className="flex flex-wrap gap-2 list-none p-0 m-0">
+                            {def.japanese.map((jp, i) => (
+                              <li key={i} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">{jp}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* 類義語 */}
+                  {currentCard.synonyms && currentCard.synonyms.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2 mt-6">類義語</h3>
+                      <div className="flex flex-wrap gap-2">
+                        {currentCard.synonyms.map((synonym, index) => (
+                          <span key={index} className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium">{synonym}</span>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 例文 */}
+                  {currentCard.example_sentences && currentCard.example_sentences.length > 0 && (
+                    <div>
+                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2 mt-6">例文</h3>
+                      <div className="space-y-4">
+                        {currentCard.example_sentences.map((sentence, index) => (
+                          <div key={index} className="mb-2">
+                            <p className="text-gray-800 font-mono">{sentence.english}</p>
+                            <p className="text-gray-600 text-sm">{sentence.japanese}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </main>
+              </div>
+            ) : (
+              <div className="flex items-center justify-center h-full">
+                <p className="text-gray-500">カードがありません</p>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
-      <div className="flex items-center w-full gap-4 mb-5">
-        <div className="flex items-center flex-grow gap-3">
+      <div className="flex items-center w-full gap-4 mb-6">
+        <div className="flex items-center flex-grow gap-4">
           <input
             type="range"
             min="0"
             max={totalCards > 0 ? totalCards - 1 : 0}
             value={currentIndex}
-            className="w-full cursor-pointer"
-            readOnly
+            onChange={handleSliderChange}
+            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
           />
-          <span>
-            {totalCards > 0 ? currentIndex + 1 : 0}/{totalCards}
+          <span className="text-sm font-medium text-gray-600 min-w-max">
+            {totalCards > 0 ? currentIndex + 1 : 0} / {totalCards}
           </span>
         </div>
-        <button
-          className="text-3xl text-gray-600 cursor-pointer"
-          onClick={handlePrev}
-          aria-label="Previous card"
-          disabled={currentIndex === 0}
-        >
-          <FaArrowLeft />
-        </button>
-        <button
-          className="text-3xl text-gray-600 cursor-pointer"
-          onClick={handleNext}
-          aria-label="Next card"
-          disabled={currentIndex >= totalCards - 1}
-        >
-          <FaArrowRight />
-        </button>
+        <div className="flex gap-2">
+          <button
+            className="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handlePrev}
+            aria-label="Previous card"
+            disabled={currentIndex === 0}
+          >
+            <FaArrowLeft className="text-lg" />
+          </button>
+          <button
+            className="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={handleNext}
+            aria-label="Next card"
+            disabled={currentIndex >= totalCards - 1}
+          >
+            <FaArrowRight className="text-lg" />
+          </button>
+        </div>
       </div>
-      <div className="flex gap-3">
+      <div className="flex flex-wrap gap-3 justify-center">
         {cards.length > 0 && (
           <button
-            className={`px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100 ${
+            className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md ${
               isUpdatingCard
-                ? 'bg-indigo-50 border-indigo-400'
-                : 'bg-white border-gray-300 hover:bg-gray-50'
+                ? 'bg-indigo-500 text-white border border-indigo-500'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
             }`}
             onClick={handleUpdateCard}
           >
-            編集
+            ✏️ 編集
           </button>
         )}
         <button
-          className={`px-6 py-2 text-base border border-gray-300 rounded-md hover:bg-gray-100 ${
+          className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md ${
             isCreatingCard
-              ? 'bg-indigo-50 border-indigo-400'
-              : 'bg-white border-gray-300 hover:bg-gray-50'
+              ? 'bg-blue-500 text-white border border-blue-500'
+              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
           }`}
           onClick={handleCreateNewCard}
         >
-          カード追加
+          ➕ カード追加
         </button>
         {currentCard && (
           <button
-            className="px-6 py-2 text-base bg-red-50 border border-red-300 text-red-600 rounded-md hover:bg-red-100 transition-colors"
+            className="px-5 py-2.5 text-sm font-medium bg-white text-red-600 border border-red-300 rounded-lg hover:bg-red-50 hover:border-red-400 transition-all duration-200 shadow-sm hover:shadow-md"
             onClick={handleDeleteCard}
           >
-            削除
+            🗑️ 削除
           </button>
         )}
         <Link
           href={`word-list/${selectedDeckId}`}
-          className="px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100"
+          className="px-5 py-2.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md inline-flex items-center gap-1"
         >
-          一覧
+          📋 一覧
         </Link>
       </div>
     </section>
