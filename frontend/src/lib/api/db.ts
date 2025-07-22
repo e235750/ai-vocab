@@ -97,6 +97,58 @@ export async function addWordbook(wordbook: DeckData, idToken: string) {
 }
 
 /**
+ * 単語カードを更新する関数
+ * @param cardId
+ * @param updatedCard
+ * @param idToken
+ * @returns
+ */
+export async function updateCard(
+  cardId: string,
+  updatedCard: NewCard,
+  idToken: string
+) {
+  if (!cardId) {
+    return { error: 'Card ID is required' }
+  }
+  if (!updatedCard) {
+    return { error: 'Updated card data is required' }
+  }
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/words/${cardId}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(updatedCard),
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Failed to update card' }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log('Error updating card:', error.message)
+      return { error: error.message }
+    }
+    console.log('Unknown error updating card:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+/**
  * ユーザの単語帳を取得する関数
  * @param deckId
  * @param idToken

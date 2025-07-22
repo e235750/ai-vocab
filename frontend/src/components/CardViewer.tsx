@@ -1,5 +1,6 @@
 import { FaArrowRight, FaArrowLeft } from 'react-icons/fa'
 import { Card } from '@/types'
+import Link from 'next/link'
 
 type CardViewerProps = {
   deckName: string
@@ -8,8 +9,10 @@ type CardViewerProps = {
   totalCards: number
   currentIndex: number
   isCreatingCard: boolean
+  isUpdatingCard?: boolean
   onNavigate: (newIndex: number) => void
   setIsCreatingCard: (isCreating: boolean) => void
+  setIsUpdatingCard: (isUpdating: boolean) => void
 }
 
 export default function CardViewer({
@@ -19,8 +22,10 @@ export default function CardViewer({
   totalCards,
   currentIndex,
   isCreatingCard,
+  isUpdatingCard,
   onNavigate,
   setIsCreatingCard,
+  setIsUpdatingCard,
 }: CardViewerProps) {
   const currentCard = cards[currentIndex]
 
@@ -34,6 +39,10 @@ export default function CardViewer({
 
   const handleCreateNewCard = () => {
     setIsCreatingCard(!isCreatingCard)
+  }
+
+  const handleUpdateCard = () => {
+    setIsUpdatingCard(!isUpdatingCard)
   }
 
   return (
@@ -76,7 +85,14 @@ export default function CardViewer({
         </button>
       </div>
       <div className="flex gap-3">
-        <button className="px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100">
+        <button
+          className={`px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100 ${
+            isUpdatingCard
+              ? 'bg-indigo-50 border-indigo-400'
+              : 'bg-white border-gray-300 hover:bg-gray-50'
+          }`}
+          onClick={handleUpdateCard}
+        >
           編集
         </button>
         <button
@@ -89,12 +105,12 @@ export default function CardViewer({
         >
           新規作成
         </button>
-        <a
+        <Link
           href={`word-list/${selectedDeckId}`}
           className="px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100"
         >
           一覧
-        </a>
+        </Link>
       </div>
     </section>
   )
