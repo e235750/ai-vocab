@@ -9,7 +9,6 @@ import { NewCard, DeckData } from '@/types'
  * @returns
  */
 export async function addCard(card: NewCard, idToken: string) {
-  console.log('card:', card)
   if (!card) {
     return { error: 'Word data is required' }
   }
@@ -50,7 +49,40 @@ export async function addCard(card: NewCard, idToken: string) {
  * @param idToken
  * @returns
  */
-// export async function deleteCard(): {}
+export async function deleteCard(cardId: string, idToken: string) {
+  if (!cardId) {
+    return { error: 'Card ID is required' }
+  }
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/words/${cardId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Failed to delete card' }
+    }
+
+    return { success: true }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.log('Error deleting card:', error.message)
+      return { error: error.message }
+    }
+    console.log('Unknown error deleting card:', error)
+    return { error: 'Unknown error' }
+  }
+}
 
 /**
  * 単語帳をデータベースに追加する関数

@@ -3,7 +3,7 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useDeckStore } from '@/stores/deckStore'
 import { useAuth } from '@/hooks/useAuth'
-import { addCard, updateCard } from '@/lib/api/db'
+import { addCard, updateCard, deleteCard } from '@/lib/api/db'
 import WordList from '@/components/WordList'
 import Loading from '@/components/Loading'
 import AddCardForm from '@/components/cardForm/AddCardForm'
@@ -49,6 +49,19 @@ export default function Page() {
       setWords(updatedWords)
     } catch (error) {
       console.error('カードの更新に失敗しました:', error)
+    }
+  }
+
+  const handleDeleteCard = async (cardId: string) => {
+    if (!user || !wordbookId) return
+    try {
+      const idToken = await user.getIdToken()
+      await deleteCard(cardId, idToken)
+      // 単語リストを再取得
+      const updatedWords = await fetchWordsInDeck(wordbookId, idToken)
+      setWords(updatedWords)
+    } catch (error) {
+      console.error('カードの削除に失敗しました:', error)
     }
   }
 
@@ -103,27 +116,29 @@ export default function Page() {
                 {words.length}個の単語が登録されています
               </p>
             </div>
-            {/* 単語追加ボタン */}
-            <button
-              onClick={() => setIsAddingCard(!isAddingCard)}
-              className="flex self-end items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
+            <div>
+              {/* 単語追加ボタン */}
+              <button
+                onClick={() => setIsAddingCard(!isAddingCard)}
+                className="flex self-end items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
               >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M12 4v16m8-8H4"
-                />
-              </svg>
-              {isAddingCard ? '閉じる' : '単語を追加'}
-            </button>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
+                </svg>
+                {isAddingCard ? '閉じる' : '単語を追加'}
+              </button>
+            </div>
           </div>
         </div>
 
@@ -140,7 +155,11 @@ export default function Page() {
         {/* 単語リストまたは空の状態 */}
         {words.length > 0 ? (
           <div className="flex justify-center">
-            <WordList words={words} onUpdate={handleUpdateCard} />
+            <WordList
+              words={words}
+              onUpdate={handleUpdateCard}
+              onDelete={handleDeleteCard}
+            />
           </div>
         ) : (
           <div className="text-center py-16">

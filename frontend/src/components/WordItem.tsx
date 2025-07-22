@@ -6,9 +6,15 @@ type WordItemProps = {
   word: Card
   onEdit?: (word: Card) => void
   onUpdate?: (wordId: string, updatedCard: NewCard) => void
+  onDelete?: (wordId: string) => void
 }
 
-export default function WordItem({ word, onEdit, onUpdate }: WordItemProps) {
+export default function WordItem({
+  word,
+  onEdit,
+  onUpdate,
+  onDelete,
+}: WordItemProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
@@ -56,6 +62,18 @@ export default function WordItem({ word, onEdit, onUpdate }: WordItemProps) {
     setIsEditMode(false)
   }
 
+  const handleDeleteClick = () => {
+    setIsMenuOpen(false)
+    if (!window.confirm('このカードを削除しますか？')) return
+    if (onDelete) {
+      onDelete(word.id)
+    }
+    // 編集モードを終了
+    setIsEditMode(false)
+    // アコーディオンを閉じる
+    setIsOpen(false)
+  }
+
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     setIsMenuOpen(!isMenuOpen)
@@ -89,12 +107,18 @@ export default function WordItem({ word, onEdit, onUpdate }: WordItemProps) {
 
           {/* ドロップダウンメニュー */}
           {isMenuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+            <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
               <button
                 onClick={handleEditClick}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg transition-colors"
               >
                 編集
+              </button>
+              <button
+                onClick={handleDeleteClick}
+                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition-colors"
+              >
+                削除
               </button>
             </div>
           )}
@@ -154,7 +178,10 @@ export default function WordItem({ word, onEdit, onUpdate }: WordItemProps) {
 
           {/* アコーディオン矢印 */}
           {hasDetails && !isEditMode && (
-            <div className="flex-shrink-0">
+            <button
+              onClick={handleCardClick}
+              className="flex-shrink-0 cursor-pointer"
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className={`h-5 w-5 text-gray-400 transition-transform duration-300 ${
@@ -171,7 +198,7 @@ export default function WordItem({ word, onEdit, onUpdate }: WordItemProps) {
                   d="M19 9l-7 7-7-7"
                 />
               </svg>
-            </div>
+            </button>
           )}
         </div>
       </div>

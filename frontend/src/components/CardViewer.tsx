@@ -13,6 +13,7 @@ type CardViewerProps = {
   onNavigate: (newIndex: number) => void
   setIsCreatingCard: (isCreating: boolean) => void
   setIsUpdatingCard: (isUpdating: boolean) => void
+  onDeleteCard?: (cardId: string) => void
 }
 
 export default function CardViewer({
@@ -26,6 +27,7 @@ export default function CardViewer({
   onNavigate,
   setIsCreatingCard,
   setIsUpdatingCard,
+  onDeleteCard,
 }: CardViewerProps) {
   const currentCard = cards[currentIndex]
 
@@ -43,6 +45,18 @@ export default function CardViewer({
 
   const handleUpdateCard = () => {
     setIsUpdatingCard(!isUpdatingCard)
+  }
+
+  const handleDeleteCard = () => {
+    if (!currentCard || !onDeleteCard) return
+
+    if (
+      window.confirm(
+        `「${currentCard.english}」を削除しますか？この操作は取り消せません。`
+      )
+    ) {
+      onDeleteCard(currentCard.id)
+    }
   }
 
   return (
@@ -85,16 +99,18 @@ export default function CardViewer({
         </button>
       </div>
       <div className="flex gap-3">
-        <button
-          className={`px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100 ${
-            isUpdatingCard
-              ? 'bg-indigo-50 border-indigo-400'
-              : 'bg-white border-gray-300 hover:bg-gray-50'
-          }`}
-          onClick={handleUpdateCard}
-        >
-          編集
-        </button>
+        {cards.length > 0 && (
+          <button
+            className={`px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100 ${
+              isUpdatingCard
+                ? 'bg-indigo-50 border-indigo-400'
+                : 'bg-white border-gray-300 hover:bg-gray-50'
+            }`}
+            onClick={handleUpdateCard}
+          >
+            編集
+          </button>
+        )}
         <button
           className={`px-6 py-2 text-base border border-gray-300 rounded-md hover:bg-gray-100 ${
             isCreatingCard
@@ -105,6 +121,14 @@ export default function CardViewer({
         >
           新規作成
         </button>
+        {currentCard && (
+          <button
+            className="px-6 py-2 text-base bg-red-50 border border-red-300 text-red-600 rounded-md hover:bg-red-100 transition-colors"
+            onClick={handleDeleteCard}
+          >
+            削除
+          </button>
+        )}
         <Link
           href={`word-list/${selectedDeckId}`}
           className="px-6 py-2 text-base bg-white border border-gray-300 rounded-md hover:bg-gray-100"

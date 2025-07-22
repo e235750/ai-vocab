@@ -9,7 +9,7 @@ import UpdateCardForm from '@/components/cardForm/UpdateCardForm'
 import { auth } from '@/lib/firebase/config'
 import { getIdToken } from '@/lib/firebase/auth'
 import { NewCard } from '@/types'
-import { addCard, updateCard } from '@/lib/api/db'
+import { addCard, updateCard, deleteCard } from '@/lib/api/db'
 import { useDeckStore } from '@/stores/deckStore'
 
 export default function HomePage() {
@@ -91,6 +91,29 @@ export default function HomePage() {
     }
   }
 
+  const handleDeleteCard = async (cardId: string) => {
+    if (!selectedDeckId) return
+
+    try {
+      const idToken = await getIdToken()
+      if (!idToken) return
+
+      await deleteCard(cardId, idToken)
+      await storeFetchDecks(idToken) // デッキの単語数を更新
+      await storeFetchWordsInDeck(selectedDeckId, idToken)
+
+      // 削除後のインデックス調整
+      const newTotalCards = currentCards.length - 1
+      if (currentCardIndex >= newTotalCards && newTotalCards > 0) {
+        navigateCard(newTotalCards - 1)
+      } else if (newTotalCards === 0) {
+        navigateCard(0)
+      }
+    } catch (error) {
+      console.error('カードの削除に失敗しました:', error)
+    }
+  }
+
   const onClose = async () => {
     const idToken = await getIdToken()
     if (!idToken) return
@@ -154,6 +177,7 @@ export default function HomePage() {
               onNavigate={handleNavigateCard}
               setIsCreatingCard={setIsCreatingCard}
               setIsUpdatingCard={setIsUpdatingCard}
+              onDeleteCard={handleDeleteCard}
             />
           ) : (
             <div className="p-6 text-center bg-white border border-gray-300 rounded-xl">
