@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react'
 import { Card, NewCard } from '@/types'
-import EditFormCore from './addCardForm/EditFormCore'
+import EditFormCore from './cardForm/EditFormCore'
 
 type WordItemProps = {
   word: Card
@@ -226,7 +226,7 @@ export default function WordItem({ word, onEdit, onUpdate }: WordItemProps) {
                       {word.synonyms.map((synonym, index) => (
                         <span
                           key={index}
-                          className="bg-teal-50 text-teal-700 px-3 py-2 text-sm font-medium rounded-md border border-teal-200 hover:bg-teal-100 transition-colors"
+                          className="text-slate-700 font-medium bg-gray-100 px-3 py-1 rounded-full"
                         >
                           {synonym}
                         </span>

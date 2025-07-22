@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth'
 import { addCard, updateCard } from '@/lib/api/db'
 import WordList from '@/components/WordList'
 import Loading from '@/components/Loading'
-import AddCardForm from '@/components/addCardForm/AddCardForm'
+import AddCardForm from '@/components/cardForm/AddCardForm'
 import { Card, NewCard } from '@/types'
 
 export default function Page() {
