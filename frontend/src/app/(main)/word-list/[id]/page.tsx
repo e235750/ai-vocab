@@ -3,7 +3,7 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useDeckStore } from '@/stores/deckStore'
 import { useAuth } from '@/hooks/useAuth'
-import { addCard, updateCard } from '@/lib/api/db'
+import { addCard, updateCard, deleteCard } from '@/lib/api/db'
 import WordList from '@/components/WordList'
 import Loading from '@/components/Loading'
 import AddCardForm from '@/components/cardForm/AddCardForm'
@@ -49,6 +49,19 @@ export default function Page() {
       setWords(updatedWords)
     } catch (error) {
       console.error('カードの更新に失敗しました:', error)
+    }
+  }
+
+  const handleDeleteCard = async (cardId: string) => {
+    if (!user || !wordbookId) return
+    try {
+      const idToken = await user.getIdToken()
+      await deleteCard(cardId, idToken)
+      // 単語リストを再取得
+      const updatedWords = await fetchWordsInDeck(wordbookId, idToken)
+      setWords(updatedWords)
+    } catch (error) {
+      console.error('カードの削除に失敗しました:', error)
     }
   }
 
@@ -140,7 +153,11 @@ export default function Page() {
         {/* 単語リストまたは空の状態 */}
         {words.length > 0 ? (
           <div className="flex justify-center">
-            <WordList words={words} onUpdate={handleUpdateCard} />
+            <WordList
+              words={words}
+              onUpdate={handleUpdateCard}
+              onDelete={handleDeleteCard}
+            />
           </div>
         ) : (
           <div className="text-center py-16">
