@@ -116,29 +116,27 @@ export default function Page() {
                 {words.length}個の単語が登録されています
               </p>
             </div>
-            <div>
-              {/* 単語追加ボタン */}
-              <button
-                onClick={() => setIsAddingCard(!isAddingCard)}
-                className="flex self-end items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+            {/* 単語追加ボタン */}
+            <button
+              onClick={() => setIsAddingCard(!isAddingCard)}
+              className="flex self-end items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                {isAddingCard ? '閉じる' : '単語を追加'}
-              </button>
-            </div>
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 4v16m8-8H4"
+                />
+              </svg>
+              {isAddingCard ? '閉じる' : '単語を追加'}
+            </button>
           </div>
         </div>
 

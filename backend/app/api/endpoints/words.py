@@ -122,4 +122,4 @@ async def delete_word(
 
     batch.commit()
 
-    return {"message": "Word deleted successfully"}
+    return None
