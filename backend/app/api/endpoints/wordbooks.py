@@ -70,3 +70,34 @@ async def get_words_in_wordbook(wordbook_id: str, db: firestore.Client = Depends
     words_ref = db.collection("words").where("wordbook_id", "==", wordbook_id)
     docs = words_ref.stream()
     return [WordResponse(**doc.to_dict()) for doc in docs]
+
+@router.delete("/{wordbook_id}",
+    status_code=status.HTTP_204_NO_CONTENT,
+    summary="単語帳を削除",
+    description="指定された単語帳IDに紐づく単語帳を削除する"
+)
+async def delete_wordbook(wordbook_id: str, db: firestore.Client = Depends(get_db), uid: str = Depends(get_current_user_uid)):
+    """
+    単語帳を削除するエンドポイント
+    """
+    wordbook_ref = db.collection("wordbooks").document(wordbook_id)
+    wordbook_doc = wordbook_ref.get()
+
+    if not wordbook_doc.exists:
+        raise HTTPException(status_code=404, detail="Wordbook not found")
+
+    if wordbook_doc.to_dict().get("owner_id") != uid:
+        raise HTTPException(status_code=403, detail="You do not have permission to delete this wordbook")
+
+    # 単語帳に紐づく単語を全て削除
+    words_ref = db.collection("words").where("wordbook_id", "==", wordbook_id)
+    batch = db.batch()
+    for doc in words_ref.stream():
+        batch.delete(doc.reference)
+
+    # 単語帳自体を削除
+    batch.delete(wordbook_ref)
+
+    batch.commit()
+
+    return None

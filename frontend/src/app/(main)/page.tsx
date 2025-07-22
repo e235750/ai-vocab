@@ -9,7 +9,7 @@ import UpdateCardForm from '@/components/cardForm/UpdateCardForm'
 import { auth } from '@/lib/firebase/config'
 import { getIdToken } from '@/lib/firebase/auth'
 import { NewCard } from '@/types'
-import { addCard, updateCard, deleteCard } from '@/lib/api/db'
+import { addCard, updateCard, deleteCard, deleteWordbook } from '@/lib/api/db'
 import { useDeckStore } from '@/stores/deckStore'
 
 export default function HomePage() {
@@ -125,6 +125,26 @@ export default function HomePage() {
     }
   }
 
+  const handleWordbookDeleted = async (deckId: string) => {
+    const idToken = await getIdToken()
+    if (!idToken) return
+
+    try {
+      await deleteWordbook(deckId, idToken)
+      const fetchedDecks = await storeFetchDecks(idToken)
+      if (fetchedDecks.length > 0) {
+        // 削除後、残っているデッキから最初のものを選択
+        const firstDeckId = fetchedDecks[0].id
+        selectDeck(firstDeckId)
+      } else {
+        // すべてのデッキが削除された場合はリセット
+        reset()
+      }
+    } catch (error) {
+      console.error('デッキの再取得に失敗しました:', error)
+    }
+  }
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -204,6 +224,7 @@ export default function HomePage() {
             isFetchingDecks={loading}
             onSelectDeck={handleSelectDeck}
             openCreateDeckModal={() => setIsOpen(true)}
+            onWordbookDeleted={handleWordbookDeleted}
           />
           <CreateDeck isOpen={isOpen} onClose={onClose} />
         </div>
