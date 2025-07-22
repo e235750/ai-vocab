@@ -3,7 +3,7 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useDeckStore } from '@/stores/deckStore'
 import { useAuth } from '@/hooks/useAuth'
-import { addCard } from '@/lib/api/db'
+import { addCard, updateCard } from '@/lib/api/db'
 import WordList from '@/components/WordList'
 import Loading from '@/components/Loading'
 import AddCardForm from '@/components/addCardForm/AddCardForm'
@@ -34,6 +34,21 @@ export default function Page() {
       setIsAddingCard(false)
     } catch (error) {
       console.error('カードの追加に失敗しました:', error)
+    }
+  }
+
+  // 単語更新ハンドラー
+  const handleUpdateCard = async (cardId: string, updatedCard: NewCard) => {
+    if (!user || !wordbookId) return
+
+    try {
+      const idToken = await user.getIdToken()
+      await updateCard(cardId, updatedCard, idToken)
+      // 単語リストを再取得
+      const updatedWords = await fetchWordsInDeck(wordbookId, idToken)
+      setWords(updatedWords)
+    } catch (error) {
+      console.error('カードの更新に失敗しました:', error)
     }
   }
 
@@ -125,7 +140,7 @@ export default function Page() {
         {/* 単語リストまたは空の状態 */}
         {words.length > 0 ? (
           <div className="flex justify-center">
-            <WordList words={words} />
+            <WordList words={words} onUpdate={handleUpdateCard} />
           </div>
         ) : (
           <div className="text-center py-16">

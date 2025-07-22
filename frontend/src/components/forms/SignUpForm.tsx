@@ -2,6 +2,7 @@
 import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { register, signInWithGoogle } from '@/lib/firebase/auth'
+import Link from 'next/link'
 
 export default function SignUpForm() {
   const router = useRouter()
@@ -96,12 +97,12 @@ export default function SignUpForm() {
             </div>
           </form>
           <div className="text-sm mt-2">
-            <a
+            <Link
               href="/sign-in"
               className="font-semibold text-indigo-600 hover:text-indigo-500"
             >
               登録済みの方はこちら
-            </a>
+            </Link>
           </div>
 
           <div className="mt-6">

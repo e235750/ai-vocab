@@ -5,10 +5,11 @@ import CardViewer from '@/components/CardViewer'
 import DeckList from '@/components/wordBook/DeckList'
 import CreateDeck from '@/components/wordBook/CreateDeck'
 import AddCardForm from '@/components/addCardForm/AddCardForm'
+import UpdateCardForm from '@/components/addCardForm/UpdateCardForm'
 import { auth } from '@/lib/firebase/config'
 import { getIdToken } from '@/lib/firebase/auth'
 import { NewCard } from '@/types'
-import { addCard } from '@/lib/api/db'
+import { addCard, updateCard } from '@/lib/api/db'
 import { useDeckStore } from '@/stores/deckStore'
 
 export default function HomePage() {
@@ -26,7 +27,22 @@ export default function HomePage() {
   } = useDeckStore()
 
   const [isOpen, setIsOpen] = useState<boolean>(false)
-  const [isCreatingCard, setIsCreatingCard] = useState<boolean>(false)
+  const [cardAction, setCardAction] = useState<
+    'none' | 'creating' | 'updating'
+  >('none')
+
+  // computed values
+  const isCreatingCard = cardAction === 'creating'
+  const isUpdatingCard = cardAction === 'updating'
+
+  // helper functions for state management
+  const setIsCreatingCard = (value: boolean) => {
+    setCardAction(value ? 'creating' : 'none')
+  }
+
+  const setIsUpdatingCard = (value: boolean) => {
+    setCardAction(value ? 'updating' : 'none')
+  }
 
   const selectedDeck = decks.find((deck) => deck.id === selectedDeckId)
   const currentCards = cachedCards[selectedDeckId] || []
@@ -58,6 +74,19 @@ export default function HomePage() {
         await storeFetchWordsInDeck(selectedDeckId, idToken)
       } catch (error) {
         console.error('カードの追加または再取得に失敗しました:', error)
+      }
+    }
+  }
+
+  const handleUpdateCard = async (updatedCard: NewCard, idToken: string) => {
+    if (selectedDeckId && currentCards[currentCardIndex]) {
+      try {
+        const cardId = currentCards[currentCardIndex].id
+        await updateCard(cardId, updatedCard, idToken)
+        await storeFetchWordsInDeck(selectedDeckId, idToken)
+        setIsUpdatingCard(false)
+      } catch (error) {
+        console.error('カードの更新に失敗しました:', error)
       }
     }
   }
@@ -121,8 +150,10 @@ export default function HomePage() {
               totalCards={currentCards.length}
               currentIndex={currentCardIndex}
               isCreatingCard={isCreatingCard}
+              isUpdatingCard={isUpdatingCard}
               onNavigate={handleNavigateCard}
               setIsCreatingCard={setIsCreatingCard}
+              setIsUpdatingCard={setIsUpdatingCard}
             />
           ) : (
             <div className="p-6 text-center bg-white border border-gray-300 rounded-xl">
@@ -133,6 +164,14 @@ export default function HomePage() {
             <AddCardForm
               selectedDeckId={selectedDeckId}
               onAddCard={handleAddCard}
+            />
+          )}
+          {selectedDeckId && isUpdatingCard && (
+            <UpdateCardForm
+              onUpdateCard={handleUpdateCard}
+              selectedDeckId={selectedDeckId}
+              cardData={currentCards[currentCardIndex]}
+              onCancel={() => setIsUpdatingCard(false)}
             />
           )}
           <DeckList
