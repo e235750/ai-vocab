@@ -99,5 +99,3 @@ async def delete_wordbook(wordbook_id: str, db: firestore.Client = Depends(get_d
     batch.delete(wordbook_ref)
 
     batch.commit()
-
-    return None

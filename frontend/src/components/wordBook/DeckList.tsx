@@ -22,7 +22,6 @@ export default function DeckList({
 }: DeckListProps) {
   const handleDelete = async (deckId: string) => {
     try {
-      await deleteWordbook(deckId, 'auto')
       if (onWordbookDeleted) {
         onWordbookDeleted(deckId)
       }

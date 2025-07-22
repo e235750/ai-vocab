@@ -121,5 +121,3 @@ async def delete_word(
     batch.delete(word_ref)
 
     batch.commit()
-
-    return None
