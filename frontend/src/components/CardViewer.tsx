@@ -1,7 +1,16 @@
-import { FaArrowRight, FaArrowLeft } from 'react-icons/fa'
+import {
+  FaArrowRight,
+  FaArrowLeft,
+  FaVolumeUp,
+  FaEdit,
+  FaPlus,
+  FaTrash,
+  FaClipboard,
+} from 'react-icons/fa'
 import { Card } from '@/types'
 import Link from 'next/link'
 import { useState } from 'react'
+import { FaE } from 'react-icons/fa6'
 
 type CardViewerProps = {
   deckName: string
@@ -102,15 +111,15 @@ export default function CardViewer({
                   <p className="text-lg text-gray-600 font-mono">
                     {currentCard.phonetics.text}
                   </p>
-                  <button 
-                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-md hover:shadow-lg" 
+                  <button
+                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-md hover:shadow-lg"
                     aria-label="音声を聞く"
                     onClick={(e) => {
                       e.stopPropagation() // カードのフリップを防ぐ
                       // TODO: 音声再生機能を実装
                     }}
                   >
-                    🔊
+                    <FaVolumeUp size={24} />
                   </button>
                 </div>
               )}
@@ -118,54 +127,84 @@ export default function CardViewer({
           </div>
 
           {/* 裏面（詳細情報） */}
-          <div className="absolute inset-0 w-full h-full bg-white border border-gray-200 rounded-lg shadow-lg backface-hidden rotate-x-180 overflow-y-auto">
+          <div
+            className="absolute inset-0 w-full h-full bg-white border border-gray-200 rounded-lg shadow-lg backface-hidden rotate-x-180 overflow-y-auto"
+            tabIndex={0}
+            aria-label="カードの詳細情報"
+          >
             {currentCard ? (
               <div className="p-6">
                 {/* ボディ */}
                 <main className="card-body">
                   {/* 定義 */}
-                  {currentCard.definitions && currentCard.definitions.length > 0 && (
-                    <div>
-                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2">定義</h3>
-                      {currentCard.definitions.map((def, index) => (
-                        <div key={index} className="mb-4">
-                          <p className="font-semibold text-gray-700 mb-2">{def.part_of_speech}</p>
-                          <ul className="flex flex-wrap gap-2 list-none p-0 m-0">
-                            {def.japanese.map((jp, i) => (
-                              <li key={i} className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm">{jp}</li>
-                            ))}
-                          </ul>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+                  {currentCard.definitions &&
+                    currentCard.definitions.length > 0 && (
+                      <div>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2">
+                          定義
+                        </h3>
+                        {currentCard.definitions.map((def, index) => (
+                          <div key={index} className="mb-4">
+                            <p className="font-semibold text-gray-700 mb-2">
+                              {def.part_of_speech}
+                            </p>
+                            <ul className="flex flex-wrap gap-2 list-none p-0 m-0">
+                              {def.japanese.map((jp, i) => (
+                                <li
+                                  key={i}
+                                  className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
+                                >
+                                  {jp}
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                   {/* 類義語 */}
                   {currentCard.synonyms && currentCard.synonyms.length > 0 && (
                     <div>
-                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2 mt-6">類義語</h3>
+                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2 mt-6">
+                        類義語
+                      </h3>
                       <div className="flex flex-wrap gap-2">
                         {currentCard.synonyms.map((synonym, index) => (
-                          <span key={index} className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium">{synonym}</span>
+                          <span
+                            key={index}
+                            className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium"
+                          >
+                            {synonym}
+                          </span>
                         ))}
                       </div>
                     </div>
                   )}
 
                   {/* 例文 */}
-                  {currentCard.example_sentences && currentCard.example_sentences.length > 0 && (
-                    <div>
-                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2 mt-6">例文</h3>
-                      <div className="space-y-4">
-                        {currentCard.example_sentences.map((sentence, index) => (
-                          <div key={index} className="mb-2">
-                            <p className="text-gray-800 font-mono">{sentence.english}</p>
-                            <p className="text-gray-600 text-sm">{sentence.japanese}</p>
-                          </div>
-                        ))}
+                  {currentCard.example_sentences &&
+                    currentCard.example_sentences.length > 0 && (
+                      <div>
+                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2 mt-6">
+                          例文
+                        </h3>
+                        <div className="space-y-4">
+                          {currentCard.example_sentences.map(
+                            (sentence, index) => (
+                              <div key={index} className="mb-2">
+                                <p className="text-gray-800 font-mono">
+                                  {sentence.english}
+                                </p>
+                                <p className="text-gray-600 text-sm">
+                                  {sentence.japanese}
+                                </p>
+                              </div>
+                            )
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  )}
+                    )}
                 </main>
               </div>
             ) : (
@@ -219,7 +258,7 @@ export default function CardViewer({
             }`}
             onClick={handleUpdateCard}
           >
-            ✏️ 編集
+            <FaEdit className="inline-block mr-1 text-lg" /> 編集
           </button>
         )}
         <button
@@ -230,21 +269,21 @@ export default function CardViewer({
           }`}
           onClick={handleCreateNewCard}
         >
-          ➕ カード追加
+          <FaPlus className="inline-block mr-1 text-lg" /> カード追加
         </button>
         {currentCard && (
           <button
             className="px-5 py-2.5 text-sm font-medium bg-white text-red-600 border border-red-300 rounded-lg hover:bg-red-50 hover:border-red-400 transition-all duration-200 shadow-sm hover:shadow-md"
             onClick={handleDeleteCard}
           >
-            🗑️ 削除
+            <FaTrash className="inline-block mr-1 text-lg" /> 削除
           </button>
         )}
         <Link
           href={`word-list/${selectedDeckId}`}
           className="px-5 py-2.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md inline-flex items-center gap-1"
         >
-          📋 一覧
+          <FaClipboard className="inline-block mr-1 text-lg" /> 一覧
         </Link>
       </div>
     </section>
