@@ -119,7 +119,7 @@ export default function CardViewer({
           }`}
           onClick={handleCreateNewCard}
         >
-          新規作成
+          カード追加
         </button>
         {currentCard && (
           <button

@@ -1,6 +1,7 @@
 import DeckItem from './DeckItem'
 import Loading from '@/components/Loading'
 import { Deck } from '@/types'
+import { deleteWordbook } from '@/lib/api/db'
 
 type DeckListProps = {
   decks: Deck[]
@@ -8,6 +9,7 @@ type DeckListProps = {
   isFetchingDecks: boolean
   onSelectDeck: (id: string) => void
   openCreateDeckModal: () => void
+  onWordbookDeleted?: (wordbookId: string) => void
 }
 
 export default function DeckList({
@@ -16,7 +18,28 @@ export default function DeckList({
   isFetchingDecks,
   onSelectDeck,
   openCreateDeckModal,
+  onWordbookDeleted,
 }: DeckListProps) {
+  const handleDelete = async (deckId: string) => {
+    try {
+      if (onWordbookDeleted) {
+        onWordbookDeleted(deckId)
+      }
+    } catch (error) {
+      console.error('単語帳の削除に失敗しました:', error)
+      alert('単語帳の削除に失敗しました。')
+    }
+  }
+
+  const handleEdit = (deck: Deck) => {
+    // TODO: 編集機能を実装
+    console.info('編集:', deck)
+  }
+
+  const handleDuplicate = (deck: Deck) => {
+    // TODO: 複製機能を実装
+    console.info('複製:', deck)
+  }
   return (
     <section className="p-6 bg-white border border-gray-300 rounded-xl">
       <div className="flex items-center justify-between mb-4">
@@ -55,6 +78,9 @@ export default function DeckList({
                 deck={deck}
                 isActive={deck.id === selectedDeckId}
                 onSelect={onSelectDeck}
+                onEdit={handleEdit}
+                onDelete={handleDelete}
+                onDuplicate={handleDuplicate}
               />
             ))}
           </ul>

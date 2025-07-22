@@ -35,10 +35,10 @@ export async function addCard(card: NewCard, idToken: string) {
     return data
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.log('Error adding card:', error.message)
+      console.error('Error adding card:', error.message)
       return { error: error.message }
     }
-    console.log('Unknown error adding card:', error)
+    console.error('Unknown error adding card:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -76,10 +76,53 @@ export async function deleteCard(cardId: string, idToken: string) {
     return { success: true }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.log('Error deleting card:', error.message)
+      console.error('Error deleting card:', error.message)
       return { error: error.message }
     }
-    console.log('Unknown error deleting card:', error)
+    console.error('Unknown error deleting card:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+/**
+ * 単語帳の単語を取得する関数
+ * @param wordbookId
+ * @param idToken
+ * @returns
+ */
+export async function getWordsInWordbook(wordbookId: string, idToken: string) {
+  if (!wordbookId) {
+    return { error: 'Wordbook ID is required' }
+  }
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${wordbookId}/words`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('Error fetching words in wordbook:', errorData.error)
+      return { error: errorData.error || 'Failed to fetch words in wordbook' }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error fetching words in wordbook:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error fetching words in wordbook:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -120,10 +163,51 @@ export async function addWordbook(wordbook: DeckData, idToken: string) {
     return data
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.log('Error creating wordbook:', error.message)
+      console.error('Error creating wordbook:', error.message)
       return { error: error.message }
     }
-    console.log('Unknown error creating wordbook:', error)
+    console.error('Unknown error creating wordbook:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+/**
+ * 単語帳を削除する関数
+ * @param wordbookId
+ * @param idToken
+ * @returns
+ */
+export async function deleteWordbook(wordbookId: string, idToken: string) {
+  if (!wordbookId) {
+    return { error: 'Wordbook ID is required' }
+  }
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${wordbookId}`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Failed to delete wordbook' }
+    }
+
+    return { success: true }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error deleting wordbook:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error deleting wordbook:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -172,10 +256,10 @@ export async function updateCard(
     return data
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.log('Error updating card:', error.message)
+      console.error('Error updating card:', error.message)
       return { error: error.message }
     }
-    console.log('Unknown error updating card:', error)
+    console.error('Unknown error updating card:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -204,63 +288,18 @@ export async function getOwnedWordbooks(idToken: string) {
 
     if (!response.ok) {
       const errorData = await response.json()
-      console.log('Error fetching owned wordbooks:', errorData.error)
+      console.error('Error fetching owned wordbooks:', errorData.error)
       return { error: errorData.error || 'Failed to fetch wordbooks' }
     }
 
     const data = await response.json()
-    console.log('Fetched owned wordbooks:', data)
     return data
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.log('Error fetching owned wordbooks:', error.message)
+      console.error('Error fetching owned wordbooks:', error.message)
       return { error: error.message }
     }
-    console.log('Unknown error fetching owned wordbooks:', error)
-    return { error: 'Unknown error' }
-  }
-}
-
-/**
- * 単語帳の単語を取得する関数
- * @param wordbookId
- * @param idToken
- * @returns
- */
-export async function getWordsInWordbook(wordbookId: string, idToken: string) {
-  if (!wordbookId) {
-    return { error: 'Wordbook ID is required' }
-  }
-  if (!idToken) {
-    return { error: 'User authentication token is required' }
-  }
-
-  try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${wordbookId}/words`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.log('Error fetching words in wordbook:', errorData.error)
-      return { error: errorData.error || 'Failed to fetch words in wordbook' }
-    }
-
-    const data = await response.json()
-    console.log('Fetched words in wordbook:', data)
-    return data
-  } catch (error: unknown) {
-    if (error instanceof Error) {
-      console.log('Error fetching words in wordbook:', error.message)
-      return { error: error.message }
-    }
-    console.log('Unknown error fetching words in wordbook:', error)
+    console.error('Unknown error fetching owned wordbooks:', error)
     return { error: 'Unknown error' }
   }
 }
