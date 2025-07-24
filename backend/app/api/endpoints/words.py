@@ -5,10 +5,25 @@ from uuid import uuid4
 
 from app.core.firebase import get_db
 from app.core.security import get_current_user_uid
-from ...schemas.words import WordRequest, WordResponse, WordsInfoRequest
+from ...schemas.words import WordRequest, WordResponse, WordGenerated
 from ...services.words import generate_enhanced_word_info, get_dictionary_data_for_word, get_word_info_from_free_dictionary
 
 router = APIRouter()
+
+
+@router.get(
+    "/{word}",
+    response_model=WordGenerated,
+    summary="単語情報をAIで拡張して取得",
+    description="Firestoreの辞書データを元に、AIが要約・整形した単語情報を返す。"
+)
+async def get_enhanced_word_info(
+    word: str,
+) -> WordGenerated:
+    dictionary_data = await get_dictionary_data_for_word(word)
+    free_dictionary_data = await get_word_info_from_free_dictionary(word)
+    enhanced_info = await generate_enhanced_word_info(dictionary_data, free_dictionary_data)
+    return enhanced_info
 
 @router.post("/", response_model=WordResponse, status_code=status.HTTP_201_CREATED)
 async def create_word(request: WordRequest, db: firestore.Client = Depends(get_db), uid: str = Depends(get_current_user_uid)):
@@ -45,21 +60,6 @@ async def create_word(request: WordRequest, db: firestore.Client = Depends(get_d
     batch.commit()
 
     return WordResponse(**word_data, id=word_id)
-
-
-@router.post(
-    "/info",
-    response_model=WordResponse,
-    summary="単語情報をAIで拡張して取得",
-    description="Firestoreの辞書データを元に、AIが要約・整形した単語情報を返す。"
-)
-async def get_enhanced_word_info(
-    request: WordsInfoRequest,
-) -> WordResponse:
-    dictionary_data = await get_dictionary_data_for_word(request.word)
-    free_dictionary_data = await get_word_info_from_free_dictionary(request.word)
-    enhanced_info = await generate_enhanced_word_info(dictionary_data, free_dictionary_data)
-    return enhanced_info
 
 @router.put("/{word_id}", response_model=WordResponse, status_code=status.HTTP_200_OK)
 async def update_word(

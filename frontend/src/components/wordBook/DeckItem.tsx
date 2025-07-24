@@ -145,7 +145,7 @@ export default function DeckItem({
                     単語一覧を見る
                   </Link>
 
-                  <button
+                  {/* <button
                     onClick={handleEdit}
                     className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                   >
@@ -183,7 +183,7 @@ export default function DeckItem({
                       />
                     </svg>
                     複製
-                  </button>
+                  </button> */}
 
                   <hr className="my-1" />
 

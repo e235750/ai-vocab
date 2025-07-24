@@ -116,6 +116,17 @@ export async function getWordsInWordbook(wordbookId: string, idToken: string) {
     }
 
     const data = await response.json()
+
+    // フロントエンド側でcreated_atによるソートを行う
+    if (Array.isArray(data)) {
+      const sortedData = data.sort((a, b) => {
+        const dateA = new Date(a.created_at)
+        const dateB = new Date(b.created_at)
+        return dateA.getTime() - dateB.getTime() // 昇順（古い順）
+      })
+      return sortedData
+    }
+
     return data
   } catch (error: unknown) {
     if (error instanceof Error) {

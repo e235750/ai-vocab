@@ -67,9 +67,10 @@ async def get_words_in_wordbook(wordbook_id: str, db: firestore.Client = Depends
         if uid is None or wordbook_data.get("owner_id") != uid:
             raise HTTPException(status_code=403, detail="Access denied")
 
-    words_ref = db.collection("words").where("wordbook_id", "==", wordbook_id)
-    docs = words_ref.stream()
-    return [WordResponse(**doc.to_dict()) for doc in docs]
+    # 指定された単語帳に含まれる単語を取得
+    words_query = db.collection("words").where("wordbook_id", "==", wordbook_id)
+    words = words_query.stream()
+    return [WordResponse(**doc.to_dict()) for doc in words]
 
 @router.delete("/{wordbook_id}",
     status_code=status.HTTP_204_NO_CONTENT,
