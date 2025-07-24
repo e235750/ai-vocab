@@ -31,10 +31,23 @@ export default function Page() {
     if (!wordbookId) return
 
     try {
-      await addCard(newCard, idToken)
-      // 単語リストを再取得
-      const updatedWords = await fetchWordsInDeck(wordbookId, idToken)
-      setWords(updatedWords)
+      const result = await addCard(newCard, idToken)
+
+      // 追加されたカードをローカル状態に即座に追加（最後に配置）
+      if (result && result.id) {
+        const newCardWithId = {
+          ...newCard,
+          id: result.id,
+          created_at: result.created_at || new Date().toISOString(),
+          updated_at: result.updated_at || new Date().toISOString(),
+        }
+        setWords((prevWords) => [...prevWords, newCardWithId])
+      } else {
+        // 結果がない場合は再取得
+        const updatedWords = await fetchWordsInDeck(wordbookId, idToken)
+        setWords(updatedWords)
+      }
+
       setIsAddingCard(false)
     } catch (error) {
       console.error('カードの追加に失敗しました:', error)

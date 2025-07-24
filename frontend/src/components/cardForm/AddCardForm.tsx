@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { FaChevronRight, FaChevronUp, FaPlus } from 'react-icons/fa'
+import { FaChevronRight, FaChevronUp, FaPlus, FaRobot } from 'react-icons/fa'
 import {
   NewCard,
   Definition,
@@ -9,10 +9,12 @@ import {
   partOfSpeechOptions,
 } from '@/types'
 import { getIdToken } from '@/lib/firebase/auth'
+import { createCard } from '@/lib/api/card'
 
 import DefinitionEditor from './DefinitionEditor'
 import ExampleSentenceEditor from './ExampleSentenceEditor'
 import SynonymEditor from './SynonymEditor'
+import Loading from '@/components/Loading'
 
 interface AddCardFormProps {
   onAddCard: (newCardData: NewCard, idToken: string) => void
@@ -24,18 +26,63 @@ export default function AddCardForm({
   selectedDeckId,
 }: AddCardFormProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [isAIGenerating, setIsAIGenerating] = useState(false)
 
   const [english, setEnglish] = useState('')
-  const [definitions, setDefinitions] = useState<Definition[]>([])
+  const [definitions, setDefinitions] = useState<Definition[]>([
+    {
+      part_of_speech: '',
+      japanese: [],
+    },
+  ])
   const [synonyms, setSynonyms] = useState<string[]>([])
   const [exampleSentences, setExampleSentences] = useState<ExampleSentence[]>(
     []
   )
 
-  const [newMeanings, setNewMeanings] = useState<string[]>([''])
+  const [newMeanings, setNewMeanings] = useState<string[]>([])
   const [newSynonym, setNewSynonym] = useState('')
   const [newExampleEnglish, setNewExampleEnglish] = useState('')
   const [newExampleJapanese, setNewExampleJapanese] = useState('')
+
+  const handleAIGenerate = async () => {
+    if (!english.trim()) {
+      alert('英単語を入力してからAI生成を実行してください。')
+      return
+    }
+
+    setIsAIGenerating(true)
+    try {
+      const result = await createCard(english.trim())
+
+      if (result.error) {
+        alert(`AI生成に失敗しました: ${result.error}`)
+        return
+      }
+
+      // AI生成データをフォームに設定
+      if (result.definitions && result.definitions.length > 0) {
+        setDefinitions(result.definitions)
+        setNewMeanings(result.definitions.map(() => ''))
+      }
+
+      if (result.synonyms) {
+        setSynonyms(result.synonyms)
+      }
+
+      if (result.example_sentences) {
+        setExampleSentences(result.example_sentences)
+      }
+
+      // フォームを展開状態にする
+      setIsExpanded(true)
+    } catch (error) {
+      console.error('AI生成エラー:', error)
+      alert('AI生成中にエラーが発生しました。')
+    } finally {
+      setIsAIGenerating(false)
+    }
+  }
 
   const handleQuickAdd = async (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -62,8 +109,7 @@ export default function AddCardForm({
     if (!idToken) return
     onAddCard(newCardData, idToken)
 
-    setEnglish('')
-    setDefinitions([{ part_of_speech: '', japanese: [''] }])
+    resetFormContent()
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -91,6 +137,10 @@ export default function AddCardForm({
     onAddCard(newCardData, idToken)
 
     setIsExpanded(false)
+    resetFormContent()
+  }
+
+  const resetFormContent = () => {
     setEnglish('')
     setDefinitions([{ part_of_speech: '', japanese: [''] }])
     setNewMeanings([''])
@@ -115,22 +165,26 @@ export default function AddCardForm({
       setNewMeanings([...newMeanings, ''])
     }
   }
+
   const handleRemoveDefinitionBlock = (defIndex: number) => {
     if (defIndex > 0) {
       setDefinitions(definitions.filter((_, i) => i !== defIndex))
       setNewMeanings(newMeanings.filter((_, i) => i !== defIndex))
     }
   }
+
   const handlePartOfSpeechChange = (defIndex: number, value: string) => {
     const newDefs = [...definitions]
     newDefs[defIndex].part_of_speech = value
     setDefinitions(newDefs)
   }
+
   const handleNewMeaningChange = (defIndex: number, value: string) => {
     const meanings = [...newMeanings]
     meanings[defIndex] = value
     setNewMeanings(meanings)
   }
+
   const handleAddMeaning = (defIndex: number) => {
     const meaningToAdd = newMeanings[defIndex]?.trim()
     if (!meaningToAdd) return
@@ -174,6 +228,19 @@ export default function AddCardForm({
   }
   const handleRemoveSynonym = (index: number) => {
     setSynonyms(synonyms.filter((_, i) => i !== index))
+  }
+
+  if (isAIGenerating) {
+    return (
+      <div className="flex items-center p-3 bg-white border border-gray-300 rounded-xl">
+        <Loading
+          className="h-10 w-60 m-auto pl-10"
+          message="生成中です..."
+          svgClassName="h-12 w-12"
+          textClassName="text-xl w-full"
+        />
+      </div>
+    )
   }
 
   // --- 展開前の表示 ---
@@ -224,6 +291,17 @@ export default function AddCardForm({
         >
           <FaPlus />
         </button>
+
+        {/* AI生成ボタン */}
+        <button
+          type="button"
+          onClick={handleAIGenerate}
+          disabled={isAIGenerating || !english.trim()}
+          className="p-2 ml-1 text-white bg-purple-500 rounded-lg hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          title="AI生成"
+        >
+          <FaRobot />
+        </button>
       </div>
     )
   }
@@ -241,15 +319,29 @@ export default function AddCardForm({
       </datalist>
 
       <div className="flex justify-between items-start">
-        <div>
+        <div className="flex-1">
           <label className="font-semibold text-gray-700">表面</label>
-          <input
-            type="text"
-            value={english}
-            onChange={(e) => setEnglish(e.target.value)}
-            placeholder="example"
-            className="text-xl text-gray-800 w-full border rounded p-2 mt-1"
-          />
+          <div className="flex gap-2 mt-1">
+            <input
+              type="text"
+              value={english}
+              onChange={(e) => setEnglish(e.target.value)}
+              placeholder="example"
+              className="text-xl text-gray-800 flex-1 border rounded p-2"
+            />
+            <button
+              type="button"
+              onClick={handleAIGenerate}
+              disabled={isAIGenerating || !english.trim()}
+              className="px-4 py-2 text-white bg-purple-500 rounded hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+              title="AI生成"
+            >
+              <>
+                <FaRobot />
+                AI生成
+              </>
+            </button>
+          </div>
         </div>
         <button
           type="button"

@@ -173,6 +173,51 @@ class WordResponse(BaseModel):
             }
         }
 
+class WordGenerated(BaseModel):
+    """
+    AIによって生成された単語情報のスキーマ
+    """
+    english: str
+    definitions: List[Definition] = Field(..., description="品詞と日本語訳のペアのリスト")
+    synonyms: Optional[List[str]] = Field(None, description="類義語のリスト")
+    example_sentences: Optional[List[ExampleSentence]] = Field(None, description="例文オブジェクトのリスト")
+    phonetics: Optional[PhoneticInfo] = Field(None, description="発音記号と音声データのオブジェクト")
+    wordbook_id: str = Field(None, description="単語帳ID (オプション)")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "english": "example",
+                "definitions": [
+                    {
+                        "part_of_speech": "noun-名詞",
+                        "japanese": ["例", "手本", "見本"]
+                    },
+                    {
+                        "part_of_speech": "verb-動詞",
+                        "japanese": ["例証する"]
+                    }
+                ],
+                "synonyms": ["sample", "instance", "model"],
+                "example_sentences": [
+                    {
+                        "english": "This is an example sentence.",
+                        "japanese": "これは例文です。"
+                    },
+                    {
+                        "english": "Let me give you another example.",
+                        "japanese": "もう一つ例を挙げさせてください。"
+                    }
+                ],
+                "phonetics": {
+                    "text": "/ˈɛɡzæmpəl/",
+                    "audio": "https://example.com/audio/example.mp3",
+                    "sourceUrl": "https://example.com/source/example.html"
+                },
+                "wordbook_id": "wordbook456"
+            }
+        }
+
 class WordsInfoRequest(BaseModel):
     """
     単語情報取得リクエストのスキーマ
