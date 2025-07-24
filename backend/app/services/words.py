@@ -84,7 +84,7 @@ async def generate_enhanced_word_info(dictionary_data: DictionaryData, free_dict
     # あなたのタスク:
     以下の制約と出力JSONフォーマットを「絶対厳守」して、上記の辞書データから情報を抽出し、整形してください。
 
-    - `definitions`: `part_of_speech` と `translations` を関連付け、品詞ごとに「日本語訳」をまとめたオブジェクトのリストを作成してください。各オブジェクトには `part_of_speech(品詞は日本語で生成してください。例：「名詞」「動詞」)`  と、それに対応する `japanese` (日本語訳のリスト) を含めてください。日本語訳は、"{word}"について最も一般的なものを3つ以内で選んでください。日本語やくは、品詞に則した訳である必要があります。出現するpart_of_speechは、一意である必要があります。
+    - `definitions`: `part_of_speech` と `translations` を関連付け、品詞ごとに「日本語訳」をまとめたオブジェクトのリストを作成してください。各オブジェクトには `part_of_speech(品詞は日本語で生成してください。例：「名詞」「動詞」)`  と、それに対応する `japanese` (日本語訳のリスト) を含めてください。日本語訳は、"{word}"について最も一般的なものを3つ以内で選んでください。日本語訳は、品詞に則した訳である必要があります。出現するpart_of_speechは、一意である必要があります。
     - `synonyms`: `synonyms`の中から、最も意味が一般的なものを最大5つ選んでください。ない場合は空の配列 `[]` を使用してください。なお、`synonyms`は英単語の同義語のリストであり、重複は除外してください。日本語は含めないでください。
     - `example_sentences`: `raw_examples`を参考に、英語と日本語の両方を含む新しい例文を最大3つ生成してください。英語の例文は、{word}を確実に含む自然かつ簡潔な文である必要があります。日本語の例文は、英語の例文を自然な「日本語」に翻訳してください。例文は、与えられた単語の意味を明確に示す、純粋な日本語のものでなければなりません。例文は、`english`と`japanese`のペアで表現してください。
 
@@ -159,7 +159,7 @@ async def generate_enhanced_word_info(dictionary_data: DictionaryData, free_dict
         # フォールバック: 基本的な単語情報を返す
         fallback_data = {
             "english": word,
-            "definitions": [{"part_of_speech": "未分類", "japanese": ["意味不明"]}],
+            "definitions": [{"part_of_speech": "未分類", "japanese": ["データが取得できませんでした。"]}],
             "synonyms": [],
             "example_sentences": []
         }
