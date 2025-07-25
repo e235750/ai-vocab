@@ -5,12 +5,11 @@ import {
   FaEdit,
   FaPlus,
   FaTrash,
-  FaClipboard,
+  FaListUl,
 } from 'react-icons/fa'
 import { Card } from '@/types'
 import Link from 'next/link'
 import { useState } from 'react'
-import { FaE } from 'react-icons/fa6'
 
 type CardViewerProps = {
   deckName: string
@@ -283,7 +282,7 @@ export default function CardViewer({
           href={`word-list/${selectedDeckId}`}
           className="px-5 py-2.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md inline-flex items-center gap-1"
         >
-          <FaClipboard className="inline-block mr-1 text-lg" /> 一覧
+          <FaListUl className="inline-block mr-1 text-lg" /> 一覧
         </Link>
       </div>
     </section>

@@ -4,23 +4,38 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDeckStore } from '@/stores/deckStore'
 import { useAuth } from '@/hooks/useAuth'
-import { addCard, updateCard, deleteCard, deleteWordbook } from '@/lib/api/db'
+import {
+  addCard,
+  updateCard,
+  deleteCard,
+  deleteWordbook,
+  updateWordbook,
+  duplicateWordbook,
+} from '@/lib/api/db'
 import WordList from '@/components/WordList'
 import Loading from '@/components/Loading'
 import AddCardForm from '@/components/cardForm/AddCardForm'
-import { Card, NewCard } from '@/types'
+import EditDeck from '@/components/wordBook/EditDeck'
+import DuplicateDeck from '@/components/wordBook/DuplicateDeck'
+import { Card, NewCard, Deck, DeckData } from '@/types'
+import { RiDeleteBin5Line } from 'react-icons/ri'
+import { LuSquarePen } from 'react-icons/lu'
+import { IoDuplicateOutline } from 'react-icons/io5'
 
 export default function Page() {
   const { id } = useParams()
   const { user } = useAuth()
   const [words, setWords] = useState<Card[]>([])
   const [deckName, setDeckName] = useState<string>('')
+  const [currentDeck, setCurrentDeck] = useState<Deck | null>(null)
   const [isAddingCard, setIsAddingCard] = useState(false)
+  const [isEditOpen, setIsEditOpen] = useState(false)
+  const [isDuplicateOpen, setIsDuplicateOpen] = useState(false)
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
-  const { loading, error, initializeDeckData, fetchWordsInDeck } =
+  const { loading, error, initializeDeckData, fetchWordsInDeck, decks } =
     useDeckStore()
 
   // 単語帳IDを文字列として取得
@@ -108,6 +123,48 @@ export default function Page() {
     setIsMenuOpen(false)
   }
 
+  const handleEdit = () => {
+    setIsEditOpen(true)
+    setIsMenuOpen(false)
+  }
+
+  const handleDuplicate = () => {
+    setIsDuplicateOpen(true)
+    setIsMenuOpen(false)
+  }
+
+  const handleDelete = () => {
+    handleDeleteWordbook()
+  }
+
+  const handleEditClose = () => {
+    setIsEditOpen(false)
+  }
+
+  const handleEditUpdate = async () => {
+    if (!user || !wordbookId) return
+
+    try {
+      const idToken = await user.getIdToken()
+      const { deckName: updatedDeckName } = await initializeDeckData(
+        wordbookId,
+        idToken
+      )
+      setDeckName(updatedDeckName)
+    } catch (error) {
+      console.error('単語帳情報の再取得に失敗しました:', error)
+    }
+  }
+
+  const handleDuplicateClose = () => {
+    setIsDuplicateOpen(false)
+  }
+
+  const handleDuplicateCompleted = () => {
+    alert('単語帳を複製しました')
+    router.push('/')
+  }
+
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     setIsMenuOpen(!isMenuOpen)
@@ -147,6 +204,16 @@ export default function Page() {
 
     initializeData()
   }, [wordbookId, user, initializeDeckData])
+
+  // 現在のdeckを設定
+  useEffect(() => {
+    if (wordbookId && decks.length > 0) {
+      const currentDeckData = decks.find((deck) => deck.id === wordbookId)
+      if (currentDeckData) {
+        setCurrentDeck(currentDeckData)
+      }
+    }
+  }, [wordbookId, decks])
 
   if (loading) {
     return (
@@ -202,25 +269,29 @@ export default function Page() {
                 {isMenuOpen && (
                   <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
                     <button
-                      onClick={handleDeleteWordbook}
-                      className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      onClick={handleEdit}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
                     >
-                      <div className="flex items-center gap-2">
-                        <svg
-                          className="w-4 h-4"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                        単語帳を削除
-                      </div>
+                      <LuSquarePen className="w-4 h-4 mr-3" />
+                      編集
+                    </button>
+
+                    <button
+                      onClick={handleDuplicate}
+                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
+                    >
+                      <IoDuplicateOutline className="w-4 h-4 mr-3" />
+                      複製
+                    </button>
+
+                    <hr className="my-1" />
+
+                    <button
+                      onClick={handleDelete}
+                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
+                    >
+                      <RiDeleteBin5Line className="w-4 h-4 mr-3" />
+                      削除
                     </button>
                   </div>
                 )}
@@ -316,6 +387,22 @@ export default function Page() {
           </div>
         )}
       </div>
+
+      {/* 編集モーダル */}
+      <EditDeck
+        isOpen={isEditOpen}
+        onClose={handleEditClose}
+        deck={currentDeck}
+        onUpdate={handleEditUpdate}
+      />
+
+      {/* 複製モーダル */}
+      <DuplicateDeck
+        isOpen={isDuplicateOpen}
+        onClose={handleDuplicateClose}
+        sourceDeck={currentDeck}
+        onDuplicated={handleDuplicateCompleted}
+      />
     </div>
   )
 }

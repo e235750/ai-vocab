@@ -183,6 +183,110 @@ export async function addWordbook(wordbook: DeckData, idToken: string) {
 }
 
 /**
+ * 単語帳を更新する関数
+ * @param wordbookId
+ * @param wordbook
+ * @param idToken
+ * @returns
+ */
+export async function updateWordbook(
+  wordbookId: string,
+  wordbook: DeckData,
+  idToken: string
+) {
+  if (!wordbookId) {
+    return { error: 'Wordbook ID is required' }
+  }
+  if (!wordbook) {
+    return { error: 'Wordbook data is required' }
+  }
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${wordbookId}`,
+      {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(wordbook),
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Failed to update wordbook' }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error updating wordbook:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error updating wordbook:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+/**
+ * 単語帳を複製する関数
+ * @param sourceWordbookId
+ * @param wordbook
+ * @param idToken
+ * @returns
+ */
+export async function duplicateWordbook(
+  sourceWordbookId: string,
+  wordbook: DeckData,
+  idToken: string
+) {
+  if (!sourceWordbookId) {
+    return { error: 'Source wordbook ID is required' }
+  }
+  if (!wordbook) {
+    return { error: 'Wordbook data is required' }
+  }
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${sourceWordbookId}/duplicate`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${idToken}`,
+        },
+        body: JSON.stringify(wordbook),
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Failed to duplicate wordbook' }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error duplicating wordbook:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error duplicating wordbook:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+/**
  * 単語帳を削除する関数
  * @param wordbookId
  * @param idToken

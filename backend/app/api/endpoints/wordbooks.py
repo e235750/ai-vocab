@@ -33,6 +33,84 @@ async def create_wordbook(request: WordBook, db: firestore.Client = Depends(get_
     doc_ref.set(wordbook_data)
     return wordbook_data
 
+@router.post(
+    "/{wordbook_id}/duplicate",
+    status_code=status.HTTP_201_CREATED,
+    response_model=WordBookResponse,
+    summary="単語帳を複製",
+    description="指定された単語帳IDの単語帳と単語を複製する"
+)
+async def duplicate_wordbook(
+    wordbook_id: str,
+    request: WordBook,
+    db: firestore.Client = Depends(get_db),
+    uid: str = Depends(get_current_user_uid)
+):
+    # 元の単語帳の存在確認
+    original_wordbook_ref = db.collection("wordbooks").document(wordbook_id)
+    original_wordbook_doc = original_wordbook_ref.get()
+    
+    if not original_wordbook_doc.exists:
+        raise HTTPException(status_code=404, detail="Original wordbook not found")
+    
+    original_wordbook_data = original_wordbook_doc.to_dict()
+    
+    # 公開設定されていない場合は所有者チェック
+    if not original_wordbook_data.get("is_public", False):
+        if original_wordbook_data.get("owner_id") != uid:
+            raise HTTPException(status_code=403, detail="You do not have permission to duplicate this wordbook")
+    
+    # 新しい単語帳を作成
+    now = datetime.now()
+    new_wordbook_id = str(uuid4())
+    new_wordbook_data = {
+        "id": new_wordbook_id,
+        "name": request.name,
+        "owner_id": uid,
+        "is_public": request.is_public,
+        "num_words": 0,  # 後で更新
+        "description": request.description,
+        "created_at": now,
+        "updated_at": now
+    }
+    
+    # バッチ処理で単語帳と単語を同時に作成
+    batch = db.batch()
+    
+    # 新しい単語帳を作成
+    new_wordbook_ref = db.collection("wordbooks").document(new_wordbook_id)
+    batch.set(new_wordbook_ref, new_wordbook_data)
+    
+    # 元の単語帳の単語を取得して複製
+    words_query = db.collection("words").where("wordbook_id", "==", wordbook_id)
+    words = list(words_query.stream())
+    
+    word_count = 0
+    for word_doc in words:
+        word_data = word_doc.to_dict()
+        new_word_id = str(uuid4())
+        new_word_data = {
+            **word_data,
+            "id": new_word_id,
+            "wordbook_id": new_wordbook_id,
+            "owner_id": uid,
+            "created_at": now,
+            "updated_at": now
+        }
+        
+        new_word_ref = db.collection("words").document(new_word_id)
+        batch.set(new_word_ref, new_word_data)
+        word_count += 1
+    
+    # 単語数を更新
+    new_wordbook_data["num_words"] = word_count
+    batch.update(new_wordbook_ref, {"num_words": word_count})
+    
+    # バッチ実行
+    batch.commit()
+    
+    return WordBookResponse(**new_wordbook_data)
+
 @router.get(
     "/",
     summary="ユーザの単語帳を取得",
@@ -71,6 +149,43 @@ async def get_words_in_wordbook(wordbook_id: str, db: firestore.Client = Depends
     words_query = db.collection("words").where("wordbook_id", "==", wordbook_id)
     words = words_query.stream()
     return [WordResponse(**doc.to_dict()) for doc in words]
+
+@router.put("/{wordbook_id}",
+    response_model=WordBookResponse,
+    summary="単語帳を更新",
+    description="指定された単語帳IDの単語帳情報を更新する"
+)
+async def update_wordbook(
+    wordbook_id: str,
+    request: WordBook,
+    db: firestore.Client = Depends(get_db),
+    uid: str = Depends(get_current_user_uid)
+):
+    """
+    単語帳を更新するエンドポイント
+    """
+    wordbook_ref = db.collection("wordbooks").document(wordbook_id)
+    wordbook_doc = wordbook_ref.get()
+
+    if not wordbook_doc.exists:
+        raise HTTPException(status_code=404, detail="Wordbook not found")
+
+    if wordbook_doc.to_dict().get("owner_id") != uid:
+        raise HTTPException(status_code=403, detail="You do not have permission to update this wordbook")
+
+    now = datetime.now()
+    updated_data = {
+        "name": request.name,
+        "description": request.description,
+        "is_public": request.is_public,
+        "updated_at": now
+    }
+
+    wordbook_ref.update(updated_data)
+
+    # 更新されたデータを返す
+    updated_doc = wordbook_ref.get()
+    return WordBookResponse(**updated_doc.to_dict())
 
 @router.delete("/{wordbook_id}",
     status_code=status.HTTP_204_NO_CONTENT,
