@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react'
 import CardViewer from '@/components/CardViewer'
 import DeckList from '@/components/wordBook/DeckList'
 import CreateDeck from '@/components/wordBook/CreateDeck'
+import EditDeck from '@/components/wordBook/EditDeck'
+import DuplicateDeck from '@/components/wordBook/DuplicateDeck'
 import AddCardForm from '@/components/cardForm/AddCardForm'
 import UpdateCardForm from '@/components/cardForm/UpdateCardForm'
 import { auth } from '@/lib/firebase/config'
 import { getIdToken } from '@/lib/firebase/auth'
-import { NewCard } from '@/types'
+import { NewCard, Deck } from '@/types'
 import { addCard, updateCard, deleteCard, deleteWordbook } from '@/lib/api/db'
 import { useDeckStore } from '@/stores/deckStore'
 
@@ -27,6 +29,10 @@ export default function HomePage() {
   } = useDeckStore()
 
   const [isOpen, setIsOpen] = useState<boolean>(false)
+  const [isEditOpen, setIsEditOpen] = useState<boolean>(false)
+  const [isDuplicateOpen, setIsDuplicateOpen] = useState<boolean>(false)
+  const [editingDeck, setEditingDeck] = useState<Deck | null>(null)
+  const [duplicatingDeck, setDuplicatingDeck] = useState<Deck | null>(null)
   const [cardAction, setCardAction] = useState<
     'none' | 'creating' | 'updating'
   >('none')
@@ -145,6 +151,48 @@ export default function HomePage() {
     }
   }
 
+  const handleWordbookEdit = (deck: Deck) => {
+    setEditingDeck(deck)
+    setIsEditOpen(true)
+  }
+
+  const handleEditClose = () => {
+    setIsEditOpen(false)
+    setEditingDeck(null)
+  }
+
+  const handleEditUpdate = async () => {
+    const idToken = await getIdToken()
+    if (!idToken) return
+
+    try {
+      await storeFetchDecks(idToken) // デッキリストを再取得
+    } catch (error) {
+      console.error('デッキの再取得に失敗しました:', error)
+    }
+  }
+
+  const handleWordbookDuplicate = (deck: Deck) => {
+    setDuplicatingDeck(deck)
+    setIsDuplicateOpen(true)
+  }
+
+  const handleDuplicateClose = () => {
+    setIsDuplicateOpen(false)
+    setDuplicatingDeck(null)
+  }
+
+  const handleDuplicateCompleted = async () => {
+    const idToken = await getIdToken()
+    if (!idToken) return
+
+    try {
+      await storeFetchDecks(idToken) // デッキリストを再取得
+    } catch (error) {
+      console.error('デッキの再取得に失敗しました:', error)
+    }
+  }
+
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
@@ -225,8 +273,22 @@ export default function HomePage() {
             onSelectDeck={handleSelectDeck}
             openCreateDeckModal={() => setIsOpen(true)}
             onWordbookDeleted={handleWordbookDeleted}
+            onWordbookEdit={handleWordbookEdit}
+            onWordbookDuplicate={handleWordbookDuplicate}
           />
           <CreateDeck isOpen={isOpen} onClose={onClose} />
+          <EditDeck
+            isOpen={isEditOpen}
+            onClose={handleEditClose}
+            deck={editingDeck}
+            onUpdate={handleEditUpdate}
+          />
+          <DuplicateDeck
+            isOpen={isDuplicateOpen}
+            onClose={handleDuplicateClose}
+            sourceDeck={duplicatingDeck}
+            onDuplicated={handleDuplicateCompleted}
+          />
         </div>
       </main>
     </>

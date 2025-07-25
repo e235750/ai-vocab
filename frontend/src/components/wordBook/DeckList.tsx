@@ -1,7 +1,6 @@
 import DeckItem from './DeckItem'
 import Loading from '@/components/Loading'
 import { Deck } from '@/types'
-import { deleteWordbook } from '@/lib/api/db'
 
 type DeckListProps = {
   decks: Deck[]
@@ -10,6 +9,8 @@ type DeckListProps = {
   onSelectDeck: (id: string) => void
   openCreateDeckModal: () => void
   onWordbookDeleted?: (wordbookId: string) => void
+  onWordbookEdit?: (deck: Deck) => void
+  onWordbookDuplicate?: (deck: Deck) => void
 }
 
 export default function DeckList({
@@ -19,6 +20,8 @@ export default function DeckList({
   onSelectDeck,
   openCreateDeckModal,
   onWordbookDeleted,
+  onWordbookEdit,
+  onWordbookDuplicate,
 }: DeckListProps) {
   const handleDelete = async (deckId: string) => {
     try {
@@ -32,13 +35,15 @@ export default function DeckList({
   }
 
   const handleEdit = (deck: Deck) => {
-    // TODO: 編集機能を実装
-    console.info('編集:', deck)
+    if (onWordbookEdit) {
+      onWordbookEdit(deck)
+    }
   }
 
   const handleDuplicate = (deck: Deck) => {
-    // TODO: 複製機能を実装
-    console.info('複製:', deck)
+    if (onWordbookDuplicate) {
+      onWordbookDuplicate(deck)
+    }
   }
   return (
     <section className="p-6 bg-white border border-gray-300 rounded-xl">
