@@ -3,7 +3,6 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
-import { logout, deleteUser } from '@/lib/firebase/auth'
 import Header from '@/components/Header'
 
 export default function MainLayout({
@@ -30,22 +29,6 @@ export default function MainLayout({
   return (
     <>
       <Header />
-      <button
-        onClick={() => {
-          logout()
-        }}
-        className="fixed bottom-4 right-4 bg-indigo-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-indigo-700 transition-colors"
-      >
-        logout
-      </button>
-      <button
-        onClick={() => {
-          deleteUser()
-        }}
-        className="fixed bottom-4 right-30 bg-red-600 text-white px-4 py-2 rounded-md shadow-md hover:bg-red-700 transition-colors"
-      >
-        delete account
-      </button>
       {children}
     </>
   )
