@@ -59,7 +59,7 @@ async def create_word(request: WordRequest, db: firestore.Client = Depends(get_d
 
     batch.commit()
 
-    return WordResponse(**word_data, id=word_id)
+    return WordResponse(**word_data)
 
 @router.put("/{word_id}", response_model=WordResponse, status_code=status.HTTP_200_OK)
 async def update_word(

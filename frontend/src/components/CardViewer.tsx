@@ -85,6 +85,18 @@ export default function CardViewer({
     }
   }
 
+  const handleAudioPlay = (e: React.MouseEvent) => {
+    e.stopPropagation() // カードのフリップを防ぐ
+    e.preventDefault() // デフォルト動作を防ぐ
+
+    if (currentCard && currentCard.phonetics && currentCard.phonetics.audio) {
+      const audio = new Audio(currentCard.phonetics.audio)
+      audio.play().catch((error) => {
+        console.error('音声再生エラー:', error)
+      })
+    }
+  }
+
   return (
     <section className="flex flex-col items-center p-6 bg-white border border-gray-300 rounded-xl">
       <h2 className="mb-4 text-base font-semibold text-gray-600">{deckName}</h2>
@@ -110,16 +122,18 @@ export default function CardViewer({
                   <p className="text-lg text-gray-600 font-mono">
                     {currentCard.phonetics.text}
                   </p>
-                  <button
-                    className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-md hover:shadow-lg"
-                    aria-label="音声を聞く"
-                    onClick={(e) => {
-                      e.stopPropagation() // カードのフリップを防ぐ
-                      // TODO: 音声再生機能を実装
-                    }}
-                  >
-                    <FaVolumeUp size={24} />
-                  </button>
+                  {currentCard.phonetics.audio && (
+                    <button
+                      type="button"
+                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
+                      aria-label="音声を聞く"
+                      onClick={handleAudioPlay}
+                      onMouseDown={(e) => e.stopPropagation()}
+                      onTouchStart={(e) => e.stopPropagation()}
+                    >
+                      <FaVolumeUp size={20} />
+                    </button>
+                  )}
                 </div>
               )}
             </div>
