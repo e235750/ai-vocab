@@ -4,20 +4,13 @@ import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDeckStore } from '@/stores/deckStore'
 import { useAuth } from '@/hooks/useAuth'
-import {
-  addCard,
-  updateCard,
-  deleteCard,
-  deleteWordbook,
-  updateWordbook,
-  duplicateWordbook,
-} from '@/lib/api/db'
+import { addCard, updateCard, deleteCard, deleteWordbook } from '@/lib/api/db'
 import WordList from '@/components/WordList'
 import Loading from '@/components/Loading'
 import AddCardForm from '@/components/cardForm/AddCardForm'
 import EditDeck from '@/components/wordBook/EditDeck'
 import DuplicateDeck from '@/components/wordBook/DuplicateDeck'
-import { Card, NewCard, Deck, DeckData } from '@/types'
+import { Card, NewCard, Deck } from '@/types'
 import { RiDeleteBin5Line } from 'react-icons/ri'
 import { LuSquarePen } from 'react-icons/lu'
 import { IoDuplicateOutline } from 'react-icons/io5'

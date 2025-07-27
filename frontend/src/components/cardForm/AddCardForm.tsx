@@ -7,6 +7,7 @@ import {
   Definition,
   ExampleSentence,
   partOfSpeechOptions,
+  Phonetics,
 } from '@/types'
 import { getIdToken } from '@/lib/firebase/auth'
 import { createCard } from '@/lib/api/card'
@@ -39,6 +40,11 @@ export default function AddCardForm({
   const [exampleSentences, setExampleSentences] = useState<ExampleSentence[]>(
     []
   )
+  const [phonetics, setPhonetics] = useState<Phonetics>({
+    text: '',
+    audio: '',
+    sourceUrl: '',
+  })
 
   const [newMeanings, setNewMeanings] = useState<string[]>([])
   const [newSynonym, setNewSynonym] = useState('')
@@ -74,6 +80,10 @@ export default function AddCardForm({
         setExampleSentences(result.example_sentences)
       }
 
+      if (result.phonetics) {
+        setPhonetics(result.phonetics)
+      }
+
       // フォームを展開状態にする
       setIsExpanded(true)
     } catch (error) {
@@ -91,20 +101,21 @@ export default function AddCardForm({
       return
     }
 
+    const cleanedDefinitions = definitions
+      .filter((d) => d.japanese.some((j) => j.trim() !== ''))
+      .map((d) => ({
+        ...d,
+        part_of_speech: d.part_of_speech.trim() || '未分類',
+      }))
+
     const newCardData = {
-      english: english.trim(),
-      definitions: [
-        {
-          part_of_speech: '未分類',
-          japanese: [definitions[0]?.japanese[0]?.trim() || ''],
-        },
-      ],
-      synonyms: [],
-      example_sentences: [],
-      phonetics: { text: '', audio: '', sourceUrl: '' },
+      english,
+      definitions: cleanedDefinitions,
+      synonyms,
+      example_sentences: exampleSentences,
+      phonetics: phonetics,
       wordbook_id: selectedDeckId,
     }
-
     const idToken = await getIdToken()
     if (!idToken) return
     onAddCard(newCardData, idToken)
@@ -128,7 +139,7 @@ export default function AddCardForm({
       definitions: cleanedDefinitions,
       synonyms,
       example_sentences: exampleSentences,
-      phonetics: { text: '', audio: '', sourceUrl: '' },
+      phonetics: phonetics,
       wordbook_id: selectedDeckId,
     }
 
