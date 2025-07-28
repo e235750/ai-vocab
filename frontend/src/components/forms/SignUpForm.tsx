@@ -16,7 +16,6 @@ export default function SignUpForm() {
     try {
       await register(email, password)
       router.push('/')
-      console.log('User registered successfully')
     } catch (error) {
       console.error('Error registering user:', error)
     }
@@ -25,7 +24,7 @@ export default function SignUpForm() {
   const doSignInWithGoogle = async () => {
     try {
       await signInWithGoogle()
-      router.push('/')
+      router.push('/'
       console.log('User signed in with Google successfully')
     } catch (error) {
       console.error('Error signing in with Google:', error)

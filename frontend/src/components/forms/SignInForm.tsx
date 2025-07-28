@@ -15,7 +15,6 @@ export default function SignInForm() {
     try {
       await signIn(email, password)
       router.push('/')
-      console.log('User signed in successfully')
     } catch (error) {
       console.error('Error signing in user:', error)
     }
@@ -25,7 +24,6 @@ export default function SignInForm() {
     try {
       await signInWithGoogle()
       router.push('/')
-      console.log('User signed in with Google successfully')
     } catch (error) {
       console.error('Error signing in with Google:', error)
     }

@@ -24,7 +24,7 @@ export default function DeckFormModal({
   initialData,
   isLoading = false,
 }: DeckFormModalProps) {
-  const [isPublic, setIsPublic] = useState(true)
+  const [isPublic, setIsPublic] = useState(false)
   const [deckName, setDeckName] = useState('')
   const [deckDescription, setDeckDescription] = useState('')
 
@@ -38,7 +38,7 @@ export default function DeckFormModal({
       // 初期化（新規作成時）
       setDeckName('')
       setDeckDescription('')
-      setIsPublic(true)
+      setIsPublic(false)
     }
   }, [initialData])
 

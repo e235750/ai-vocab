@@ -18,7 +18,6 @@ export default function WordbookGrid({
   onDuplicate,
   onDelete,
 }: WordbookGridProps) {
-  console.log('WordbookGrid wordbooks:', wordbooks)
   if (wordbooks.length === 0) {
     return <WordbookEmptyState activeTab={activeTab} />
   }

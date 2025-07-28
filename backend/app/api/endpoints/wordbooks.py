@@ -21,6 +21,7 @@ async def create_wordbook(request: WordBook, db: firestore.Client = Depends(get_
     wordbook_data = {
         "id": str(uuid4()),
         "name": request.name,
+        "user_name": request.user_name,
         "owner_id": uid,
         "is_public": request.is_public,
         "num_words": 0,
@@ -66,6 +67,7 @@ async def duplicate_wordbook(
     new_wordbook_data = {
         "id": new_wordbook_id,
         "name": request.name,
+        "user_name": request.user_name,
         "owner_id": uid,
         "is_public": request.is_public,
         "num_words": 0,  # 後で更新

@@ -231,27 +231,22 @@ export const useDeckStore = create<DeckStore>((set, get) => ({
       now - lastFetchTime < CACHE_DURATION &&
       allDecks.length > 0
     ) {
-      console.info('Using cached data, skipping API call')
-      return { owned: [], public: [] }
+      const { decks, publicDecks } = get()
+      return { owned: decks, public: publicDecks }
     }
 
     try {
       setLoading(true)
       setError(null)
-      console.info('Starting to fetch wordbooks...')
 
       const [ownedResult, publicResult] = await Promise.all([
         getOwnedWordbooks(idToken),
         getPublicWordbooks(idToken),
       ])
 
-      console.info('API results:', { ownedResult, publicResult })
-
       const ownedDecks = !ownedResult.error ? ownedResult : []
       const publicDecks = !publicResult.error ? publicResult : []
       const allDecks = [...ownedDecks, ...publicDecks]
-
-      console.info('Processed data:', { ownedDecks, publicDecks, allDecks })
 
       set({
         decks: ownedDecks,

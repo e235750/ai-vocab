@@ -196,9 +196,7 @@ export default function WordbookCard({
           </div>
           <div className="flex items-center">
             <LuBookOpen className="w-4 h-4 mr-2 flex-shrink-0" />
-            <span className="truncate">
-              {wordbook.num_words || wordbook.word_count || 0}語
-            </span>
+            <span className="truncate">{wordbook.num_words || 0}語</span>
           </div>
         </div>
 
