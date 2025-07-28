@@ -49,17 +49,17 @@ async def duplicate_wordbook(
     # 元の単語帳の存在確認
     original_wordbook_ref = db.collection("wordbooks").document(wordbook_id)
     original_wordbook_doc = original_wordbook_ref.get()
-    
+
     if not original_wordbook_doc.exists:
         raise HTTPException(status_code=404, detail="Original wordbook not found")
-    
+
     original_wordbook_data = original_wordbook_doc.to_dict()
-    
+
     # 公開設定されていない場合は所有者チェック
     if not original_wordbook_data.get("is_public", False):
         if original_wordbook_data.get("owner_id") != uid:
             raise HTTPException(status_code=403, detail="You do not have permission to duplicate this wordbook")
-    
+
     # 新しい単語帳を作成
     now = datetime.now()
     new_wordbook_id = str(uuid4())
@@ -73,18 +73,18 @@ async def duplicate_wordbook(
         "created_at": now,
         "updated_at": now
     }
-    
+
     # バッチ処理で単語帳と単語を同時に作成
     batch = db.batch()
-    
+
     # 新しい単語帳を作成
     new_wordbook_ref = db.collection("wordbooks").document(new_wordbook_id)
     batch.set(new_wordbook_ref, new_wordbook_data)
-    
+
     # 元の単語帳の単語を取得して複製
     words_query = db.collection("words").where("wordbook_id", "==", wordbook_id)
     words = list(words_query.stream())
-    
+
     word_count = 0
     for word_doc in words:
         word_data = word_doc.to_dict()
@@ -121,6 +121,26 @@ async def get_owned_wordbooks(db: firestore.Client = Depends(get_db), uid: str =
     wordbooks_ref = db.collection("wordbooks").where("owner_id", "==", uid)
     docs = wordbooks_ref.stream()
     return [WordBookResponse(**doc.to_dict()) for doc in docs]
+
+@router.get(
+        "/public",
+        summary="公開単語帳を取得",
+        response_model=List[WordBookResponse],
+        description="公開されている単語帳のリストを取得する"
+)
+async def get_public_wordbooks(db: firestore.Client = Depends(get_db), uid: str = Depends(get_current_user_uid)):
+    # 公開されている単語帳のみを取得（単一条件クエリ）
+    wordbooks_ref = db.collection("wordbooks").where("is_public", "==", True)
+    docs = wordbooks_ref.stream()
+
+    # 自分の単語帳を除外（アプリケーション側でフィルタ）
+    result = []
+    for doc in docs:
+        wordbook_data = doc.to_dict()
+        if wordbook_data.get("owner_id") != uid:
+            result.append(WordBookResponse(**wordbook_data))
+
+    return result
 
 @router.get("/{wordbook_id}/words",
     response_model=List[WordResponse],
