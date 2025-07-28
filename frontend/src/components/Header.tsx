@@ -16,6 +16,8 @@ import {
 } from 'react-icons/lu'
 import { logout } from '@/lib/firebase/auth'
 
+const FALLBACK_EMAIL = 'user@example.com'
+
 export default function Header() {
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -137,7 +139,7 @@ export default function Header() {
                       {user?.displayName || 'ゲストユーザー'}
                     </p>
                     <p className="text-xs text-gray-500">
-                      {user?.email || 'user@example.com'}
+                      {user?.email || FALLBACK_EMAIL}
                     </p>
                   </div>
 
@@ -220,7 +222,7 @@ export default function Header() {
                     {user?.displayName || 'ゲストユーザー'}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {user?.email || 'user@example.com'}
+                    {user?.email || FALLBACK_EMAIL}
                   </p>
                 </div>
               </div>
@@ -278,10 +280,7 @@ export default function Header() {
               </Link>
 
               <button
-                onClick={() => {
-                  handleLogout()
-                  setIsMobileMenuOpen(false)
-                }}
+                onClick={handleLogout}
                 className="flex items-center w-full px-4 py-3 text-sm font-medium text-red-600 hover:text-red-700 hover:bg-red-50 transition-colors"
               >
                 <LuLogOut className="w-5 h-5 mr-3" />
