@@ -10,11 +10,13 @@ class WordBook(BaseModel):
     is_public: bool = Field(..., description="単語帳が公開されているかどうか")
     num_words: int = Field(..., description="単語帳に含まれる単語の数")
     description: Optional[str] = Field(None, description="単語帳の説明")
+    user_name: Optional[str] = Field(None, description="ユーザー名")
 
     class Config:
         json_schema_extra = {
             "example": {
                 "name": "英単語帳",
+                "user_name": "ユーザー名",
                 "is_public": True,
                 "num_words": 50,
                 "description": "英語の単語を学ぶための単語帳"
@@ -30,6 +32,7 @@ class WordBookResponse(WordBook):
     is_public: bool = Field(..., description="単語帳が公開されているかどうか")
     num_words: int = Field(..., description="単語帳に含まれる単語の数")
     description: Optional[str] = Field(None, description="単語帳の説明")
+    user_name: Optional[str] = Field(None, description="ユーザー名")
     created_at: datetime = Field(..., description="作成日時")
     updated_at: datetime = Field(..., description="更新日時")
 
@@ -38,6 +41,7 @@ class WordBookResponse(WordBook):
             "example": {
                 "id": "wordbook123",
                 "name": "英単語帳",
+                "user_name": "ユーザー名",
                 "is_public": True,
                 "num_words": 50,
                 "description": "英語の単語を学ぶための単語帳",

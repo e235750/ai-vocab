@@ -78,7 +78,6 @@ export const deleteUser = async () => {
   if (user) {
     try {
       await user.delete()
-      console.log('User deleted successfully')
     } catch (error) {
       console.error('Error deleting user:', error)
       throw error

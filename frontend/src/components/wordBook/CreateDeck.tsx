@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DeckData } from '@/types'
-import { addWordbook } from '@/lib/api/db'
-import { getIdToken } from '@/lib/firebase/auth'
+import { useDeckStore } from '@/stores/deckStore'
+import { useAuth } from '@/hooks/useAuth'
 import DeckFormModal from './DeckFormModal'
 
 type CreateDeckProps = {
@@ -11,22 +11,24 @@ type CreateDeckProps = {
 
 export default function CreateDeck({ isOpen, onClose }: CreateDeckProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const { createDeck } = useDeckStore()
+  const { user } = useAuth()
 
   const handleSubmit = async (data: DeckData) => {
+    if (!user) {
+      alert('認証エラーが発生しました')
+      return
+    }
+
     setIsLoading(true)
     try {
-      const idToken = await getIdToken()
-      if (!idToken) {
-        alert('認証エラーが発生しました')
-        return
+      const idToken = await user.getIdToken()
+      // ユーザー名を追加
+      const dataWithUserName = {
+        ...data,
+        user_name: user.displayName || user.email || 'ゲストユーザー'
       }
-
-      const result = await addWordbook(data, idToken)
-      if (result.error) {
-        alert(`作成に失敗しました: ${result.error}`)
-        return
-      }
-
+      await createDeck(dataWithUserName, idToken)
       onClose()
     } catch (error) {
       console.error('Error creating deck:', error)

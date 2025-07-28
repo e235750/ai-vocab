@@ -56,6 +56,7 @@ export interface DeckData {
   description?: string
   is_public: boolean
   num_words: number
+  user_name?: string
 }
 
 // 単語帳の型定義
@@ -67,4 +68,5 @@ export interface Deck {
   description?: string
   created_at: string
   updated_at: string
+  user_name?: string
 }
