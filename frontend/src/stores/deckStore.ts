@@ -250,8 +250,8 @@ export const useDeckStore = create<DeckStore>((set, get) => ({
 
       set({
         decks: ownedDecks,
-        publicDecks: publicDecks,
-        allDecks: allDecks,
+        publicDecks,
+        allDecks,
         lastFetchTime: Date.now(),
       })
 
