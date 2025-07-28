@@ -1,47 +1,36 @@
 import { useState } from 'react'
 import { DeckData, Deck } from '@/types'
-import { updateWordbook } from '@/lib/api/db'
-import { getIdToken } from '@/lib/firebase/auth'
+import { useDeckStore } from '@/stores/deckStore'
+import { useAuth } from '@/hooks/useAuth'
 import DeckFormModal from './DeckFormModal'
 
 type EditDeckProps = {
   isOpen: boolean
   onClose: () => void
   deck: Deck | null
-  onUpdate?: () => void
 }
 
-export default function EditDeck({
-  isOpen,
-  onClose,
-  deck,
-  onUpdate,
-}: EditDeckProps) {
+export default function EditDeck({ isOpen, onClose, deck }: EditDeckProps) {
   const [isLoading, setIsLoading] = useState(false)
+  const { updateDeck } = useDeckStore()
+  const { user } = useAuth()
 
   const handleSubmit = async (data: DeckData) => {
-    if (!deck) return
+    if (!deck || !user) {
+      alert('認証エラーが発生しました')
+      return
+    }
 
     setIsLoading(true)
     try {
       const updatedData: DeckData = {
         ...data,
         num_words: deck.num_words, // 既存の単語数を保持
+        user_name: user.displayName || user.email || 'ゲストユーザー'
       }
 
-      const idToken = await getIdToken()
-      if (!idToken) {
-        alert('認証エラーが発生しました')
-        return
-      }
-
-      const result = await updateWordbook(deck.id, updatedData, idToken)
-      if (result.error) {
-        alert(`更新に失敗しました: ${result.error}`)
-        return
-      }
-
-      onUpdate?.() // 親コンポーネントに更新を通知
+      const idToken = await user.getIdToken()
+      await updateDeck(deck.id, updatedData, idToken)
       onClose()
     } catch (error) {
       console.error('Error updating deck:', error)

@@ -418,3 +418,37 @@ export async function getOwnedWordbooks(idToken: string) {
     return { error: 'Unknown error' }
   }
 }
+
+/**
+ * 公開単語帳を取得する関数
+ * @returns
+ */
+export async function getPublicWordbooks(idToken: string) {
+  try {
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/public`,
+      {
+        method: 'GET',
+        headers: {
+          Authorization: `Bearer ${idToken}`,
+        },
+      }
+    )
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      console.error('Error fetching public wordbooks:', errorData.error)
+      return { error: errorData.error || 'Failed to fetch public wordbooks' }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error fetching public wordbooks:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error fetching public wordbooks:', error)
+    return { error: 'Unknown error' }
+  }
+}

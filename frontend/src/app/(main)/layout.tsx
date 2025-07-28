@@ -4,6 +4,7 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
 import Header from '@/components/Header'
+import Loading from '@/components/Loading'
 
 export default function MainLayout({
   children,
@@ -22,7 +23,11 @@ export default function MainLayout({
 
   // 読み込み中、または未ログイン（リダイレクト待ち）の場合はローディング表示
   if (loading || !user) {
-    return <div>Loading...</div>
+    return (
+      <div className="flex justify-center items-center min-h-96">
+        <Loading />
+      </div>
+    )
   }
 
   // ログイン済みの場合は子ページを表示
