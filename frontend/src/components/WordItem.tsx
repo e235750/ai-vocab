@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from 'react'
 import { Card, NewCard } from '@/types'
 import EditFormCore from './cardForm/EditFormCore'
+import { FaBookmark, FaRegBookmark } from 'react-icons/fa'
+import { useAuth } from '@/hooks/useAuth'
+import { useBookmarkStore } from '@/stores/bookmarkStore'
 
 type WordItemProps = {
   word: Card
@@ -19,6 +22,27 @@ export default function WordItem({
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
+  const { user } = useAuth()
+  const {
+    toggleBookmark,
+    loadBookmarks,
+    isCardBookmarked,
+    loading: bookmarkLoading,
+  } = useBookmarkStore()
+
+  // ブックマーク一覧を初期読み込み
+  useEffect(() => {
+    const loadBookmarksData = async () => {
+      if (user) {
+        try {
+          await loadBookmarks()
+        } catch (error) {
+          console.error('Error loading bookmarks:', error)
+        }
+      }
+    }
+    loadBookmarksData()
+  }, [user, loadBookmarks])
 
   // 詳細情報がある場合のみアコーディオンを開けるようにする
   const hasDetails =
@@ -74,6 +98,23 @@ export default function WordItem({
     setIsOpen(false)
   }
 
+  const handleBookmarkToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation() // アコーディオンの開閉を防ぐ
+    e.preventDefault()
+
+    if (!word || !user) {
+      alert('認証エラーが発生しました')
+      return
+    }
+
+    try {
+      await toggleBookmark(word.id)
+    } catch (error) {
+      console.error('Error toggling bookmark:', error)
+      alert('ブックマークの操作に失敗しました')
+    }
+  }
+
   const handleMenuClick = (e: React.MouseEvent) => {
     e.stopPropagation()
     setIsMenuOpen(!isMenuOpen)
@@ -89,45 +130,68 @@ export default function WordItem({
     <div className="border-b last:border-b-0 border-gray-200 hover:bg-gray-50/50 transition-colors">
       {/* --- アコーディオンヘッダー --- */}
       <div className="relative p-5 sm:px-6 sm:py-6">
-        {/* 3点リーダーメニュー（右上に配置） */}
-        <div className="absolute top-3 right-3" ref={menuRef}>
-          <button
-            onClick={handleMenuClick}
-            className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-            aria-label="メニューを開く"
-          >
-            <svg
-              className="w-5 h-5 text-gray-500"
-              fill="currentColor"
-              viewBox="0 0 20 20"
+        {/* 右上のボタンエリア */}
+        <div className="absolute top-3 right-3 flex items-center gap-2">
+          {/* ブックマークボタン */}
+          {user && (
+            <button
+              onClick={handleBookmarkToggle}
+              className="p-2 text-gray-400 hover:text-yellow-500 transition-colors rounded-full hover:bg-gray-100"
+              aria-label={
+                isCardBookmarked(word.id)
+                  ? 'ブックマークを削除'
+                  : 'ブックマークに追加'
+              }
+              disabled={bookmarkLoading}
             >
-              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-            </svg>
-          </button>
-
-          {/* ドロップダウンメニュー */}
-          {isMenuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-              <button
-                onClick={handleEditClick}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg transition-colors"
-              >
-                編集
-              </button>
-              <button
-                onClick={handleDeleteClick}
-                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition-colors"
-              >
-                削除
-              </button>
-            </div>
+              {isCardBookmarked(word.id) ? (
+                <FaBookmark size={16} className="text-yellow-500" />
+              ) : (
+                <FaRegBookmark size={16} />
+              )}
+            </button>
           )}
+
+          {/* 3点リーダーメニュー */}
+          <div ref={menuRef}>
+            <button
+              onClick={handleMenuClick}
+              className="p-2 hover:bg-gray-200 rounded-full transition-colors"
+              aria-label="メニューを開く"
+            >
+              <svg
+                className="w-5 h-5 text-gray-500"
+                fill="currentColor"
+                viewBox="0 0 20 20"
+              >
+                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
+              </svg>
+            </button>
+
+            {/* ドロップダウンメニュー */}
+            {isMenuOpen && (
+              <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
+                <button
+                  onClick={handleEditClick}
+                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg transition-colors"
+                >
+                  編集
+                </button>
+                <button
+                  onClick={handleDeleteClick}
+                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition-colors"
+                >
+                  削除
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex justify-between items-center">
           {isEditMode ? (
             // 編集モード
-            <div className="flex-1 pr-12">
+            <div className="flex-1 pr-20">
               <EditFormCore
                 cardData={word}
                 onSubmit={handleEditSubmit}
@@ -139,7 +203,7 @@ export default function WordItem({
           ) : (
             // 通常表示モード
             <div
-              className="flex-1 min-w-0 cursor-pointer pr-12"
+              className="flex-1 min-w-0 cursor-pointer pr-20"
               onClick={handleCardClick}
             >
               {/* 英単語表示 */}

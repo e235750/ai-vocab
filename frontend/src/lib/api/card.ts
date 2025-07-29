@@ -1,5 +1,4 @@
 'use server'
-
 export async function createCard(word: string) {
   if (!word) {
     return { error: 'Word is required' }

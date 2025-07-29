@@ -70,3 +70,16 @@ export interface Deck {
   updated_at: string
   user_name?: string
 }
+
+// ブックマークの型定義
+export interface Bookmark {
+  id: string
+  card_id: string
+  user_id: string
+  created_at: string
+}
+
+// 新規ブックマークの型定義
+export interface NewBookmark {
+  card_id: string
+}

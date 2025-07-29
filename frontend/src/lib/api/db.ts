@@ -1,6 +1,15 @@
 'use server'
-
 import { NewCard, DeckData } from '@/types'
+
+// API URLを取得する関数
+function getApiUrl(): string {
+  // ブラウザ環境では localhost を使用
+  if (typeof window !== 'undefined') {
+    return 'http://localhost:8000/api'
+  }
+  // サーバー環境では環境変数を使用
+  return process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000/api'
+}
 
 /**
  * 単語カードをデータベースに追加する関数
@@ -17,7 +26,7 @@ export async function addCard(card: NewCard, idToken: string) {
   }
 
   try {
-    const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/words/`, {
+    const response = await fetch(`${getApiUrl()}/words/`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -391,15 +400,12 @@ export async function getOwnedWordbooks(idToken: string) {
   }
 
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      }
-    )
+    const response = await fetch(`${getApiUrl()}/wordbooks/`, {
+      method: 'GET',
+      headers: {
+        Authorization: `Bearer ${idToken}`,
+      },
+    })
 
     if (!response.ok) {
       const errorData = await response.json()

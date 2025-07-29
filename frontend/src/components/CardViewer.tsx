@@ -1,3 +1,5 @@
+'use client'
+
 import {
   FaArrowRight,
   FaArrowLeft,
@@ -6,10 +8,14 @@ import {
   FaPlus,
   FaTrash,
   FaListUl,
+  FaBookmark,
+  FaRegBookmark,
 } from 'react-icons/fa'
 import { Card } from '@/types'
 import Link from 'next/link'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { useAuth } from '@/hooks/useAuth'
+import { useBookmarkStore } from '@/stores/bookmarkStore'
 
 type CardViewerProps = {
   deckName: string
@@ -39,7 +45,29 @@ export default function CardViewer({
   onDeleteCard,
 }: CardViewerProps) {
   const [isFlipped, setIsFlipped] = useState(false)
+  const { user } = useAuth()
+  const {
+    toggleBookmark,
+    loadBookmarks,
+    isCardBookmarked,
+    loading: bookmarkLoading,
+  } = useBookmarkStore()
+
   const currentCard = cards[currentIndex]
+
+  // ブックマーク一覧を初期読み込み
+  useEffect(() => {
+    const loadBookmarksData = async () => {
+      if (user) {
+        try {
+          await loadBookmarks()
+        } catch (error) {
+          console.error('Error loading bookmarks:', error)
+        }
+      }
+    }
+    loadBookmarksData()
+  }, [user, loadBookmarks])
 
   const handlePrev = () => {
     if (currentIndex > 0) {
@@ -97,6 +125,23 @@ export default function CardViewer({
     }
   }
 
+  const handleBookmarkToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation() // カードのフリップを防ぐ
+    e.preventDefault() // デフォルト動作を防ぐ
+
+    if (!currentCard || !user) {
+      alert('認証エラーが発生しました')
+      return
+    }
+
+    try {
+      await toggleBookmark(currentCard.id)
+    } catch (error) {
+      console.error('Error toggling bookmark:', error)
+      alert('ブックマークの操作に失敗しました')
+    }
+  }
+
   return (
     <section className="flex flex-col items-center p-6 bg-white border border-gray-300 rounded-xl">
       <h2 className="mb-4 text-base font-semibold text-gray-600">{deckName}</h2>
@@ -113,6 +158,29 @@ export default function CardViewer({
         >
           {/* 表面（英単語） */}
           <div className="absolute inset-0 w-full h-full bg-white border border-gray-200 rounded-lg shadow-lg backface-hidden flex items-center justify-center">
+            {/* ブックマークボタン */}
+            {currentCard && user && (
+              <button
+                type="button"
+                className="absolute top-4 right-4 text-gray-400 hover:text-yellow-500 transition-colors z-10"
+                aria-label={
+                  isCardBookmarked(currentCard.id)
+                    ? 'ブックマークを削除'
+                    : 'ブックマークに追加'
+                }
+                onClick={handleBookmarkToggle}
+                onMouseDown={(e) => e.stopPropagation()}
+                onTouchStart={(e) => e.stopPropagation()}
+                disabled={bookmarkLoading}
+              >
+                {isCardBookmarked(currentCard.id) ? (
+                  <FaBookmark size={28} className="text-yellow-500" />
+                ) : (
+                  <FaRegBookmark size={28} />
+                )}
+              </button>
+            )}
+
             <div className="text-center px-8">
               <p className="text-4xl font-bold text-gray-800 mb-4 font-mono tracking-wide">
                 {currentCard?.english || 'カードがありません'}
