@@ -1,9 +1,13 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState } from 'react'
 import { Card, NewCard } from '@/types'
 import EditFormCore from './cardForm/EditFormCore'
+import DropdownMenu from './DropdownMenu'
+import { useWordMenuItems } from '@/hooks/useMenuItems'
+import { PermissionLevel } from '@/types'
 
 type WordItemProps = {
   word: Card
+  permission?: PermissionLevel
   onEdit?: (word: Card) => void
   onUpdate?: (wordId: string, updatedCard: NewCard) => void
   onDelete?: (wordId: string) => void
@@ -11,45 +15,19 @@ type WordItemProps = {
 
 export default function WordItem({
   word,
+  permission = 'owner', // デフォルトは所有者権限
   onEdit,
   onUpdate,
   onDelete,
 }: WordItemProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
 
   // 詳細情報がある場合のみアコーディオンを開けるようにする
   const hasDetails =
     (word.synonyms && word.synonyms.length > 0) ||
     (word.example_sentences && word.example_sentences.length > 0) ||
     (word.phonetics && (word.phonetics.text || word.phonetics.audio))
-
-  // メニューの外側をクリックしたら閉じる
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false)
-      }
-    }
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isMenuOpen])
-
-  const handleEditClick = () => {
-    setIsMenuOpen(false)
-    setIsEditMode(true)
-    if (onEdit) {
-      onEdit(word)
-    }
-  }
 
   const handleEditSubmit = (updatedCard: NewCard) => {
     if (onUpdate) {
@@ -62,66 +40,43 @@ export default function WordItem({
     setIsEditMode(false)
   }
 
-  const handleDeleteClick = () => {
-    setIsMenuOpen(false)
-    if (!window.confirm('このカードを削除しますか？')) return
-    if (onDelete) {
-      onDelete(word.id)
-    }
-    // 編集モードを終了
-    setIsEditMode(false)
-    // アコーディオンを閉じる
-    setIsOpen(false)
-  }
-
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsMenuOpen(!isMenuOpen)
-  }
-
   const handleCardClick = () => {
     if (hasDetails) {
       setIsOpen(!isOpen)
     }
   }
 
+  // ドロップダウンメニューのアイテムを定義
+  const menuItems = useWordMenuItems({
+    permission,
+    onEdit: () => {
+      setIsEditMode(true)
+      if (onEdit) {
+        onEdit(word)
+      }
+    },
+    onDelete: () => {
+      if (!window.confirm('このカードを削除しますか？')) return
+      if (onDelete) {
+        onDelete(word.id)
+      }
+      setIsEditMode(false)
+      setIsOpen(false)
+    },
+  })
+
   return (
     <div className="border-b last:border-b-0 border-gray-200 hover:bg-gray-50/50 transition-colors">
       {/* --- アコーディオンヘッダー --- */}
       <div className="relative p-5 sm:px-6 sm:py-6">
-        {/* 3点リーダーメニュー（右上に配置） */}
-        <div className="absolute top-3 right-3" ref={menuRef}>
-          <button
-            onClick={handleMenuClick}
-            className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-            aria-label="メニューを開く"
-          >
-            <svg
-              className="w-5 h-5 text-gray-500"
-              fill="currentColor"
-              viewBox="0 0 20 20"
-            >
-              <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-            </svg>
-          </button>
-
+        {/* 右上のボタンエリア */}
+        <div className="absolute top-3 right-3">
           {/* ドロップダウンメニュー */}
-          {isMenuOpen && (
-            <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-              <button
-                onClick={handleEditClick}
-                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg transition-colors"
-              >
-                編集
-              </button>
-              <button
-                onClick={handleDeleteClick}
-                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition-colors"
-              >
-                削除
-              </button>
-            </div>
-          )}
+          <DropdownMenu
+            items={menuItems}
+            buttonClassName="p-2 hover:bg-gray-200 rounded-full transition-colors"
+            menuClassName="absolute right-0 top-8 mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+          />
         </div>
 
         <div className="flex justify-between items-center">

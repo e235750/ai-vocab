@@ -70,3 +70,6 @@ export interface Deck {
   updated_at: string
   user_name?: string
 }
+
+// 権限レベルの定義
+export type PermissionLevel = 'owner' | 'public' | 'readonly'
