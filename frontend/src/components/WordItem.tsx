@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Card, NewCard } from '@/types'
 import EditFormCore from './cardForm/EditFormCore'
 import DropdownMenu from './DropdownMenu'
+import AudioPlayButton from './AudioPlayButton'
 import { useWordMenuItems } from '@/hooks/useMenuItems'
 import { PermissionLevel } from '@/types'
 
@@ -182,15 +183,7 @@ export default function WordItem({
                           </span>
                         )}
                         {word.phonetics.audio && (
-                          <button
-                            className="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center transition-colors"
-                            aria-label="音声を聞く"
-                            onClick={() => {
-                              // 音声再生の実装（将来的に）
-                            }}
-                          >
-                            🔊
-                          </button>
+                          <AudioPlayButton audioUrl={word.phonetics.audio} />
                         )}
                       </div>
                     </div>
