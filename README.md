@@ -1,8 +1,8 @@
-# AI Vocab - AI英単語学習アプリケーション
+# WordWise - AI英単語学習アプリケーション
 
-AI Vocabは、AI技術を活用した現代的な英単語学習プラットフォームです。ユーザーは単語帳を作成し、AIが生成する詳細な定義、例文、発音情報を使って効率的に英語学習を行うことができます。
+WordWiseは、AI技術を活用した現代的な英単語学習プラットフォームです。ユーザーは単語帳を作成し、AIが生成する詳細な定義、例文、発音情報を使って効率的に英語学習を行うことができます。
 
-![AI Vocab](./docs/images/app-preview.png)
+![WordWise](./docs/images/app-preview.png)
 
 ## 🚀 主な機能
 
@@ -74,8 +74,8 @@ AI Vocabは、AI技術を活用した現代的な英単語学習プラットフ�
 
 1. **リポジトリのクローン**
 ```bash
-git clone https://github.com/e235750/ai-vocab.git
-cd ai-vocab
+git clone https://github.com/e235750/word-wise.git
+cd word-wise
 ```
 
 2. **環境変数の設定**
@@ -115,7 +115,7 @@ docker-compose -f docker-compose.yml -f docker-compose.prod.yml up -d
 ## 📁 プロジェクト構造
 
 ```
-ai-vocab/
+word-wise/
 ├── frontend/                 # Next.js フロントエンドアプリケーション
 │   ├── src/
 │   │   ├── app/             # App Router ページ

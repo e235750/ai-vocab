@@ -1,6 +1,6 @@
-# Backend - AI Vocab API
+# Backend - WordWise API
 
-AI VocabのFastAPI バックエンドサービスです。AI機能、ユーザー認証、単語帳管理のためのRESTful APIを提供します。
+WordWiseのFastAPI バックエンドサービスです。AI機能、ユーザー認証、単語帳管理のためのRESTful APIを提供します。
 
 ## 🛠️ 技術スタック
 
