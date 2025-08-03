@@ -120,15 +120,7 @@ export function useMenuItems(config: UseMenuItemsConfig = {}) {
       deckMenuItems,
       wordMenuItems,
     }
-  }, [
-    config.deckId,
-    config.permission,
-    config.onEdit,
-    config.onDuplicate,
-    config.onDelete,
-    config.onViewWords,
-    config.onViewCards,
-  ])
+  }, [config])
 }
 
 // 個別のメニュータイプ用のヘルパーフック

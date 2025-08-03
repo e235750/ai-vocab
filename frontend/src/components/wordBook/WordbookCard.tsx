@@ -1,14 +1,9 @@
 import Link from 'next/link'
-import {
-  LuUser,
-  LuCalendar,
-  LuBookOpen,
-  LuGlobe,
-  LuLock,
-} from 'react-icons/lu'
+import { LuUser, LuCalendar, LuBookOpen, LuGlobe, LuLock } from 'react-icons/lu'
 import { Deck } from '@/types'
 import DropdownMenu from '../DropdownMenu'
-import { useWordbookMenuItems, type PermissionLevel } from '@/hooks/useMenuItems'
+import { useWordbookMenuItems } from '@/hooks/useMenuItems'
+import { PermissionLevel } from '@/types'
 
 interface WordbookCardProps {
   wordbook: Deck
@@ -25,7 +20,6 @@ export default function WordbookCard({
   onDuplicate,
   onDelete,
 }: WordbookCardProps) {
-
   const handleEdit = () => {
     onEdit(wordbook)
   }

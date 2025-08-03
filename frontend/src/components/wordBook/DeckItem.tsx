@@ -1,6 +1,7 @@
 import { Deck } from '@/types'
 import DropdownMenu from '../DropdownMenu'
-import { useDeckMenuItems, type PermissionLevel } from '@/hooks/useMenuItems'
+import { useDeckMenuItems } from '@/hooks/useMenuItems'
+import { PermissionLevel } from '@/types'
 
 type DeckItemProps = {
   deck: Deck
