@@ -37,6 +37,8 @@ export default function AudioPlayButton({
     // 音声再生完了時またはエラー時に状態をリセット
     const resetPlayingState = () => {
       setIsPlaying(false)
+      audio.removeEventListener('ended', resetPlayingState)
+      audio.removeEventListener('error', resetPlayingState)
     }
 
     audio.addEventListener('ended', resetPlayingState)
