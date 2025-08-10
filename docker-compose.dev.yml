@@ -6,6 +6,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.dev
+    image: word-wise-backend:dev
     container_name: wordwise-backend-dev
     env_file:
       - ./backend/.env.development
@@ -26,6 +27,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile
       target: development
+    image: word-wise-frontend:dev
     ports:
       - "3000:3000"
     env_file:

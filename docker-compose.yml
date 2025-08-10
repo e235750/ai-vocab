@@ -5,6 +5,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile # 開発環境用
+    image: word-wise-frontend
     container_name: wordwise-frontend-dev
     env_file:
       - ./frontend/.env.local
@@ -22,6 +23,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile # 開発環境用
+    image: word-wise-backend
     container_name: wordwise-backend-dev
     env_file:
       - ./backend/.env.development

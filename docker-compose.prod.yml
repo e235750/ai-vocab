@@ -19,6 +19,7 @@ services:
       context: ./frontend
       dockerfile: Dockerfile.prod
       target: production
+    image: word-wise-frontend:prod
     environment:
       - NODE_ENV=production
     env_file:
@@ -38,6 +39,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
+    image: word-wise-backend:prod
     environment:
       - ENVIRONMENT=production
       - PYTHONPATH=/app
