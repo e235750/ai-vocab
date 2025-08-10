@@ -1,4 +1,4 @@
-import { FaTimes, FaPlus } from 'react-icons/fa'
+import { FaTimes } from 'react-icons/fa'
 
 interface SynonymEditorProps {
   synonyms: string[]

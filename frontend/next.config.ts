@@ -1,34 +1,15 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // 画像の最適化設定
+  // Server Actions設定
+  experimental: {
+    serverActions: {
+      allowedOrigins: ['localhost:8080', 'localhost:3000'],
+    },
+  },
+  // 画像の最適化設定 - 完全に無効化
   images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh4.googleusercontent.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh5.googleusercontent.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh6.googleusercontent.com',
-        port: '',
-        pathname: '/**',
-      },
-    ],
+    unoptimized: true,
   },
   // 非同期でヘッダー情報を返す関数を定義
   async headers() {

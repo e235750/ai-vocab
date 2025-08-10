@@ -1,14 +1,18 @@
+# デフォルト環境（開発）
+# 開発環境: docker-compose -f docker-compose.dev.yml up
 services:
   frontend:
     build:
       context: ./frontend
-      dockerfile: Dockerfile
-    container_name: ai-vacab-frontend
+      dockerfile: Dockerfile # 開発環境用
+    container_name: wordwise-frontend-dev
     env_file:
       - ./frontend/.env.local
     volumes:
       - ./frontend/src:/app/src
       - ./frontend/public:/app/public
+      - ./frontend/package.json:/app/package.json
+      - ./frontend/package-lock.json:/app/package-lock.json
     ports:
       - "3000:3000"
     depends_on:
@@ -17,16 +21,19 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
-    container_name: backend_api
+      dockerfile: Dockerfile # 開発環境用
+    container_name: wordwise-backend-dev
     env_file:
-      - ./backend/.env
+      - ./backend/.env.development
     ports:
       - "8000:8000"
     volumes:
       - ./backend/app:/app/app
       - ./backend/pyproject.toml:/app/pyproject.toml
       - ./backend/poetry.lock:/app/poetry.lock
+    environment:
+      - ENVIRONMENT=development
+      - PYTHONPATH=/app
 
   # dictionary_builder:
   #   build:

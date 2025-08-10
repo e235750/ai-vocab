@@ -1,0 +1,43 @@
+version: "3.8"
+
+services:
+  # 開発環境用バックエンド
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.dev
+    container_name: wordwise-backend-dev
+    env_file:
+      - ./backend/.env.development
+    environment:
+      - ENVIRONMENT=development
+      - PYTHONPATH=/app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/pyproject.toml:/app/pyproject.toml
+      - ./backend/poetry.lock:/app/poetry.lock
+    restart: unless-stopped
+
+  # 開発環境用フロントエンド
+  frontend-dev:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      target: development
+    ports:
+      - "3000:3000"
+    env_file:
+      - ./frontend/.env.local
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+      - /app/.next
+    depends_on:
+      - backend-dev
+    restart: unless-stopped
+
+networks:
+  default:
+    name: wordwise-dev

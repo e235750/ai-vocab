@@ -381,7 +381,6 @@ export async function updateCard(
 
 /**
  * ユーザの単語帳を取得する関数
- * @param deckId
  * @param idToken
  * @returns
  */
@@ -421,6 +420,7 @@ export async function getOwnedWordbooks(idToken: string) {
 
 /**
  * 公開単語帳を取得する関数
+ * @param idToken
  * @returns
  */
 export async function getPublicWordbooks(idToken: string) {
