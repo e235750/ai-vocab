@@ -8,6 +8,7 @@ interface BookmarkStore {
   bookmarks: Bookmark[]
   loading: boolean
   error: string | null
+  isLoaded: boolean // 初期化済みフラグを追加
 
   // アクション
   loadBookmarks: () => Promise<void>
@@ -21,8 +22,14 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
   bookmarks: [],
   loading: false,
   error: null,
+  isLoaded: false, // 初期化済みフラグを初期化
 
   loadBookmarks: async () => {
+    // 既にロード済み、または現在ロード中の場合はスキップ
+    if (get().isLoaded || get().loading) {
+      return
+    }
+    
     try {
       set({ loading: true, error: null })
 
@@ -41,6 +48,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
         bookmarks,
         bookmarkedCardIds,
         loading: false,
+        isLoaded: true, // 初期化完了フラグを設定
       })
     } catch (error) {
       set({

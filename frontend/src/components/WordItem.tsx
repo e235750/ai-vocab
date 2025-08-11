@@ -32,12 +32,13 @@ export default function WordItem({
     loadBookmarks,
     isCardBookmarked,
     loading: bookmarkLoading,
+    isLoaded: bookmarksLoaded,
   } = useBookmarkStore()
 
-  // ブックマーク一覧を初期読み込み
+  // ブックマーク一覧を初期読み込み（まだロードされていない場合のみ）
   useEffect(() => {
     const loadBookmarksData = async () => {
-      if (user) {
+      if (user && !bookmarksLoaded) {
         try {
           await loadBookmarks()
         } catch (error) {
@@ -46,7 +47,7 @@ export default function WordItem({
       }
     }
     loadBookmarksData()
-  }, [user, loadBookmarks])
+  }, [user, loadBookmarks, bookmarksLoaded])
 
   // 詳細情報がある場合のみアコーディオンを開けるようにする
   const hasDetails =

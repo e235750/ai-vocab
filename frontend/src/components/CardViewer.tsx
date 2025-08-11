@@ -51,14 +51,15 @@ export default function CardViewer({
     loadBookmarks,
     isCardBookmarked,
     loading: bookmarkLoading,
+    isLoaded: bookmarksLoaded,
   } = useBookmarkStore()
 
   const currentCard = cards[currentIndex]
 
-  // ブックマーク一覧を初期読み込み
+  // ブックマーク一覧を初期読み込み（まだロードされていない場合のみ）
   useEffect(() => {
     const loadBookmarksData = async () => {
-      if (user) {
+      if (user && !bookmarksLoaded) {
         try {
           await loadBookmarks()
         } catch (error) {
@@ -67,7 +68,7 @@ export default function CardViewer({
       }
     }
     loadBookmarksData()
-  }, [user, loadBookmarks])
+  }, [user, loadBookmarks, bookmarksLoaded])
 
   const handlePrev = () => {
     if (currentIndex > 0) {

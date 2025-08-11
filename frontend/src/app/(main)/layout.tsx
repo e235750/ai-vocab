@@ -3,6 +3,7 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/useAuth'
+import { useBookmarkStore } from '@/stores/bookmarkStore'
 import Header from '@/components/Header'
 import Loading from '@/components/Loading'
 
@@ -13,6 +14,7 @@ export default function MainLayout({
 }) {
   const { user, loading } = useAuth()
   const router = useRouter()
+  const { loadBookmarks, isLoaded: bookmarksLoaded } = useBookmarkStore()
 
   useEffect(() => {
     // 読み込みが完了し、かつユーザーがいない場合
@@ -20,6 +22,20 @@ export default function MainLayout({
       router.push('/sign-in') // サインインページにリダイレクト
     }
   }, [user, loading, router])
+
+  // ユーザーがログインしたら、ブックマークを初期化
+  useEffect(() => {
+    const initializeBookmarks = async () => {
+      if (user && !bookmarksLoaded) {
+        try {
+          await loadBookmarks()
+        } catch (error) {
+          console.error('Error loading bookmarks in layout:', error)
+        }
+      }
+    }
+    initializeBookmarks()
+  }, [user, loadBookmarks, bookmarksLoaded])
 
   // 読み込み中、または未ログイン（リダイレクト待ち）の場合はローディング表示
   if (loading || !user) {
