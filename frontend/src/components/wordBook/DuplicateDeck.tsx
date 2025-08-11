@@ -8,12 +8,14 @@ type DuplicateDeckProps = {
   isOpen: boolean
   onClose: () => void
   sourceDeck: Deck | null
+  onDuplicated?: () => Promise<void>
 }
 
 export default function DuplicateDeck({
   isOpen,
   onClose,
   sourceDeck,
+  onDuplicated,
 }: DuplicateDeckProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { duplicateDeck } = useDeckStore()
@@ -29,10 +31,16 @@ export default function DuplicateDeck({
     try {
       const dataWithUserName = {
         ...data,
-        user_name: user.displayName || user.email || 'ゲストユーザー'
+        user_name: user.displayName || user.email || 'ゲストユーザー',
       }
       const idToken = await user.getIdToken()
       await duplicateDeck(sourceDeck.id, dataWithUserName, idToken)
+
+      // 複製完了後のコールバックを実行
+      if (onDuplicated) {
+        await onDuplicated()
+      }
+
       onClose()
     } catch (error) {
       console.error('Error duplicating deck:', error)

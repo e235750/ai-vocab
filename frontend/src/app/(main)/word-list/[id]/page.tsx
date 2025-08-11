@@ -145,6 +145,21 @@ export default function Page() {
     setIsEditOpen(false)
   }
 
+  const handleEditUpdate = async () => {
+    // データを再取得して表示を更新
+    if (!wordbookId || !user) return
+
+    try {
+      const idToken = await user.getIdToken()
+      const { words: fetchedWords, deckName: fetchedDeckName } =
+        await initializeDeckData(wordbookId, idToken)
+      setWords(fetchedWords)
+      setDeckName(fetchedDeckName)
+    } catch (error) {
+      console.error('データの再取得に失敗しました:', error)
+    }
+  }
+
   const handleDuplicateClose = () => {
     setIsDuplicateOpen(false)
   }
@@ -324,6 +339,7 @@ export default function Page() {
           isOpen={isEditOpen}
           onClose={handleEditClose}
           deck={currentDeck}
+          onUpdate={handleEditUpdate}
         />
       )}
 

@@ -17,8 +17,9 @@ import { auth } from './config'
 export const register = async (email: string, password: string) => {
   try {
     await createUserWithEmailAndPassword(auth, email, password)
-  } catch (error: FirebaseError) {
-    if (error.code === 'auth/email-already-in-use') {
+  } catch (error) {
+    const firebaseError = error as FirebaseError
+    if (firebaseError.code === 'auth/email-already-in-use') {
       alert('このメールアドレスはすでに使用されています。')
       throw new Error('このメールアドレスはすでに使用されています。')
     } else {
