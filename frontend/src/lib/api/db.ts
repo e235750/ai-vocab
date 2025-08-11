@@ -1,5 +1,5 @@
 'use server'
-import { NewCard, DeckData } from '@/types'
+import { NewCard, DeckData, WordBook } from '@/types'
 
 // API URLを取得する関数
 function getApiUrl(): string {
@@ -455,6 +455,271 @@ export async function getPublicWordbooks(idToken: string) {
       return { error: error.message }
     }
     console.error('Unknown error fetching public wordbooks:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+// 検索レスポンス用のインターフェース
+export interface SearchResponse {
+  wordbooks: WordBook[]
+  total: number
+  page: number
+  total_pages: number
+  has_next: boolean
+  has_prev: boolean
+  query: string
+}
+
+/**
+ * 単語帳を検索する
+ * @param queryParams 検索パラメータ
+ * @param idToken 認証トークン
+ * @returns 検索結果
+ */
+export async function searchWordbooks(queryParams: string, idToken: string): Promise<SearchResponse | { error: string }> {
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const url = `${getApiUrl()}/wordbooks/search?${queryParams}`
+    console.info('Search URL:', url)
+    console.info('API Base URL:', getApiUrl())
+    
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Search failed' }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error searching wordbooks:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error searching wordbooks:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+/**
+ * 特定の単語帳を取得する
+ * @param id 単語帳ID
+ * @param idToken 認証トークン
+ * @returns 単語帳データ
+ */
+export async function getWordbook(id: string, idToken: string): Promise<WordBook | { error: string }> {
+  if (!id) {
+    return { error: 'Wordbook ID is required' }
+  }
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/wordbooks/${id}`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Failed to fetch wordbook' }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error fetching wordbook:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error fetching wordbook:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+/**
+ * 単語帳の一覧を取得する
+ * @param idToken 認証トークン
+ * @returns 単語帳一覧
+ */
+export async function getWordbooks(idToken: string): Promise<WordBook[] | { error: string }> {
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/wordbooks`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Failed to fetch wordbooks' }
+    }
+
+    const data = await response.json()
+    return data
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error fetching wordbooks:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error fetching wordbooks:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+/**
+ * 新しい単語帳を作成する
+ * @param data 単語帳データ
+ * @param idToken 認証トークン
+ * @returns 作成された単語帳
+ */
+export async function createWordbook(data: {
+  name: string
+  description?: string
+  is_public: boolean
+}, idToken: string): Promise<WordBook | { error: string }> {
+  if (!data) {
+    return { error: 'Wordbook data is required' }
+  }
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/wordbooks`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Failed to create wordbook' }
+    }
+
+    const result = await response.json()
+    return result
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error creating wordbook:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error creating wordbook:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+/**
+ * 単語帳を更新する（新版）
+ * @param id 単語帳ID
+ * @param data 更新データ
+ * @param idToken 認証トークン
+ * @returns 更新された単語帳
+ */
+export async function updateWordbookNew(
+  id: string,
+  data: {
+    name?: string
+    description?: string
+    is_public?: boolean
+  },
+  idToken: string
+): Promise<WordBook | { error: string }> {
+  if (!id) {
+    return { error: 'Wordbook ID is required' }
+  }
+  if (!data) {
+    return { error: 'Update data is required' }
+  }
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/wordbooks/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+      body: JSON.stringify(data),
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Failed to update wordbook' }
+    }
+
+    const result = await response.json()
+    return result
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error updating wordbook:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error updating wordbook:', error)
+    return { error: 'Unknown error' }
+  }
+}
+
+/**
+ * 単語帳を削除する（新版）
+ * @param id 単語帳ID
+ * @param idToken 認証トークン
+ * @returns 削除結果
+ */
+export async function deleteWordbookNew(id: string, idToken: string): Promise<{ success: boolean } | { error: string }> {
+  if (!id) {
+    return { error: 'Wordbook ID is required' }
+  }
+  if (!idToken) {
+    return { error: 'User authentication token is required' }
+  }
+
+  try {
+    const response = await fetch(`${getApiUrl()}/wordbooks/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${idToken}`,
+      },
+    })
+
+    if (!response.ok) {
+      const errorData = await response.json()
+      return { error: errorData.error || 'Failed to delete wordbook' }
+    }
+
+    return { success: true }
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error deleting wordbook:', error.message)
+      return { error: error.message }
+    }
+    console.error('Unknown error deleting wordbook:', error)
     return { error: 'Unknown error' }
   }
 }

@@ -71,6 +71,9 @@ export interface Deck {
   user_name?: string
 }
 
+// 検索用の単語帳型定義（Deckのエイリアス）
+export type WordBook = Deck
+
 // ブックマークの型定義
 export interface Bookmark {
   id: string

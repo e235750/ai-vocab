@@ -2,6 +2,40 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from datetime import datetime
 
+class WordBookCreate(BaseModel):
+    """
+    単語帳作成のスキーマ
+    """
+    name: str = Field(..., description="単語帳の名前")
+    description: Optional[str] = Field(None, description="単語帳の説明")
+    is_public: bool = Field(False, description="単語帳が公開されているかどうか")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "英単語帳",
+                "description": "英語の単語を学ぶための単語帳",
+                "is_public": True
+            }
+        }
+
+class WordBookUpdate(BaseModel):
+    """
+    単語帳更新のスキーマ
+    """
+    name: Optional[str] = Field(None, description="単語帳の名前")
+    description: Optional[str] = Field(None, description="単語帳の説明") 
+    is_public: Optional[bool] = Field(None, description="単語帳が公開されているかどうか")
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "name": "英単語帳（更新版）",
+                "description": "英語の単語を学ぶための単語帳",
+                "is_public": False
+            }
+        }
+
 class WordBook(BaseModel):
     """
     単語帳のスキーマ

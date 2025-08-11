@@ -1,13 +1,17 @@
-from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi import APIRouter, status, Depends, HTTPException, Query
 from firebase_admin import firestore
 from datetime import datetime
 from uuid import uuid4
+import math
+from typing import List, Optional
 
 from app.core.firebase import get_db
-from ...schemas.wordbooks import WordBook, WordBookResponse
+from app.core.security import get_current_user_uid
+from ...schemas.wordbooks import WordBook, WordBookResponse, WordBookCreate, WordBookUpdate
 from ...schemas.words import WordResponse
+from ...schemas.search import SearchQuery, SearchResponse
+from ...schemas.search import SearchResponse
 from ...core.security import get_current_user_uid
-from typing import List
 router = APIRouter()
 
 @router.post(
@@ -208,6 +212,98 @@ async def update_wordbook(
     # 更新されたデータを返す
     updated_doc = wordbook_ref.get()
     return WordBookResponse(**updated_doc.to_dict())
+
+@router.get("/search",
+    response_model=SearchResponse,
+    summary="単語帳を検索",
+    description="クエリに基づいて単語帳を検索し、フィルタリング・ソート機能を提供する"
+)
+async def search_wordbooks(
+    q: Optional[str] = Query(None, description="検索クエリ"),
+    is_public: Optional[bool] = Query(None, description="公開単語帳のみ表示"),
+    is_owned: Optional[bool] = Query(None, description="自分の単語帳のみ表示"),
+    min_words: Optional[int] = Query(None, description="最小単語数"),
+    sort_by: str = Query("created_at", description="ソート基準"),
+    sort_order: str = Query("desc", description="ソート順"),
+    page: int = Query(1, description="ページ番号", ge=1),
+    limit: int = Query(20, description="1ページの件数", ge=1, le=100),
+    db: firestore.Client = Depends(get_db),
+    uid: str = Depends(get_current_user_uid)
+):
+    try:
+        # ベースクエリでまず全ての単語帳を取得
+        wordbooks_ref = db.collection("wordbooks")
+        
+        # まずソートのみ適用
+        if sort_order == "desc":
+            wordbooks_ref = wordbooks_ref.order_by(sort_by, direction=firestore.Query.DESCENDING)
+        else:
+            wordbooks_ref = wordbooks_ref.order_by(sort_by, direction=firestore.Query.ASCENDING)
+        
+        # 全件数を取得
+        all_docs = list(wordbooks_ref.stream())
+        
+        # クライアントサイドでフィルタリング
+        filtered_docs = []
+        
+        for doc in all_docs:
+            wordbook_data = doc.to_dict()
+            
+            # セキュリティチェック: 他人の非公開単語帳は除外
+            is_owner = wordbook_data.get('owner_id') == uid
+            is_public_wordbook = wordbook_data.get('is_public', False)
+            
+            # 自分の単語帳でない場合は、公開されているもののみ表示
+            if not is_owner and not is_public_wordbook:
+                continue
+            
+            # is_public フィルター
+            if is_public is not None and wordbook_data.get('is_public') != is_public:
+                continue
+            
+            # is_owned フィルター
+            if is_owned is not None:
+                if is_owned and not is_owner:
+                    continue
+                elif not is_owned and is_owner:
+                    continue
+            
+            # min_words フィルター
+            if min_words is not None and wordbook_data.get('num_words', 0) < min_words:
+                continue
+            
+            # テキスト検索
+            if q and q.strip():
+                query_lower = q.lower()
+                searchable_text = f"{wordbook_data.get('name', '')} {wordbook_data.get('description', '')} {wordbook_data.get('user_name', '')}".lower()
+                if query_lower not in searchable_text:
+                    continue
+            
+            filtered_docs.append(doc)
+        
+        total = len(filtered_docs)
+        total_pages = math.ceil(total / limit) if total > 0 else 1
+        
+        # ページネーション
+        start_index = (page - 1) * limit
+        end_index = start_index + limit
+        page_docs = filtered_docs[start_index:end_index]
+        
+        # レスポンス作成
+        wordbooks = [WordBookResponse(**doc.to_dict()) for doc in page_docs]
+        
+        return SearchResponse(
+            wordbooks=wordbooks,
+            total=total,
+            page=page,
+            total_pages=total_pages,
+            has_next=page < total_pages,
+            has_prev=page > 1,
+            query=q or ""
+        )
+        
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
 @router.delete("/{wordbook_id}",
     status_code=status.HTTP_204_NO_CONTENT,
