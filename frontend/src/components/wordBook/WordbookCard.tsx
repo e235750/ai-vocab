@@ -1,18 +1,9 @@
 import Link from 'next/link'
-import { useState, useEffect, useRef } from 'react'
-import {
-  LuUser,
-  LuCalendar,
-  LuBookOpen,
-  LuGlobe,
-  LuLock,
-  LuPencil,
-  LuTrash2,
-  LuCopy,
-  LuList,
-} from 'react-icons/lu'
-import { BsThreeDotsVertical } from 'react-icons/bs'
+import { LuUser, LuCalendar, LuBookOpen, LuGlobe, LuLock } from 'react-icons/lu'
 import { Deck } from '@/types'
+import DropdownMenu from '../DropdownMenu'
+import { useWordbookMenuItems } from '@/hooks/useMenuItems'
+import { PermissionLevel } from '@/types'
 
 interface WordbookCardProps {
   wordbook: Deck
@@ -29,47 +20,15 @@ export default function WordbookCard({
   onDuplicate,
   onDelete,
 }: WordbookCardProps) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
-
-  // メニューの外側をクリックしたら閉じる
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false)
-      }
-    }
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isMenuOpen])
-
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsMenuOpen(!isMenuOpen)
-  }
-
-  const handleEdit = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsMenuOpen(false)
+  const handleEdit = () => {
     onEdit(wordbook)
   }
 
-  const handleDuplicate = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsMenuOpen(false)
+  const handleDuplicate = () => {
     onDuplicate(wordbook)
   }
 
-  const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsMenuOpen(false)
-
+  const handleDelete = () => {
     if (
       !window.confirm(
         `単語帳「${wordbook.name}」を削除しますか？\n\nこの操作により、単語帳内のすべての単語も削除されます。\nこの操作は取り消せません。`
@@ -80,6 +39,16 @@ export default function WordbookCard({
 
     onDelete(wordbook)
   }
+
+  // カスタムフックを使用してメニューアイテムを取得
+  const permission: PermissionLevel = activeTab === 'my' ? 'owner' : 'public'
+  const menuItems = useWordbookMenuItems({
+    deckId: wordbook.id,
+    permission,
+    onEdit: handleEdit,
+    onDuplicate: handleDuplicate,
+    onDelete: handleDelete,
+  })
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString('ja-JP', {
@@ -113,72 +82,8 @@ export default function WordbookCard({
               <LuLock className="w-4 h-4 text-gray-400" title="非公開" />
             )}
 
-            {/* 3点メニュー */}
-            <div className="relative" ref={menuRef}>
-              <button
-                onClick={handleMenuClick}
-                className="text-gray-500 hover:text-gray-700 p-1 rounded-full hover:bg-gray-100 transition-colors"
-                title="メニューを開く"
-              >
-                <BsThreeDotsVertical className="w-5 h-5" />
-              </button>
-
-              {/* ドロップダウンメニュー */}
-              {isMenuOpen && (
-                <div className="absolute right-0 top-8 mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                  <div className="py-1">
-                    <Link
-                      href={`/word-list/${wordbook.id}`}
-                      className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      onClick={() => setIsMenuOpen(false)}
-                    >
-                      <LuList className="w-4 h-4 mr-3" />
-                      単語一覧を見る
-                    </Link>
-
-                    {activeTab === 'my' && (
-                      <>
-                        <button
-                          onClick={handleEdit}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                        >
-                          <LuPencil className="w-4 h-4 mr-3" />
-                          編集
-                        </button>
-
-                        <button
-                          onClick={handleDuplicate}
-                          className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                        >
-                          <LuCopy className="w-4 h-4 mr-3" />
-                          複製
-                        </button>
-
-                        <hr className="my-1" />
-
-                        <button
-                          onClick={handleDelete}
-                          className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                        >
-                          <LuTrash2 className="w-4 h-4 mr-3" />
-                          削除
-                        </button>
-                      </>
-                    )}
-
-                    {activeTab === 'public' && (
-                      <button
-                        onClick={handleDuplicate}
-                        className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                      >
-                        <LuCopy className="w-4 h-4 mr-3" />
-                        複製
-                      </button>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            {/* ドロップダウンメニュー */}
+            <DropdownMenu items={menuItems} />
           </div>
         </div>
 

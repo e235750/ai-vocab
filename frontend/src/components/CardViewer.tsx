@@ -1,9 +1,9 @@
 'use client'
 
+import { useState, useEffect } from 'react'
 import {
   FaArrowRight,
   FaArrowLeft,
-  FaVolumeUp,
   FaEdit,
   FaPlus,
   FaTrash,
@@ -13,9 +13,9 @@ import {
 } from 'react-icons/fa'
 import { Card } from '@/types'
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useBookmarkStore } from '@/stores/bookmarkStore'
+import AudioPlayButton from './AudioPlayButton'
 
 type CardViewerProps = {
   deckName: string
@@ -113,18 +113,6 @@ export default function CardViewer({
     }
   }
 
-  const handleAudioPlay = (e: React.MouseEvent) => {
-    e.stopPropagation() // カードのフリップを防ぐ
-    e.preventDefault() // デフォルト動作を防ぐ
-
-    if (currentCard && currentCard.phonetics && currentCard.phonetics.audio) {
-      const audio = new Audio(currentCard.phonetics.audio)
-      audio.play().catch((error) => {
-        console.error('音声再生エラー:', error)
-      })
-    }
-  }
-
   const handleBookmarkToggle = async (e: React.MouseEvent) => {
     e.stopPropagation() // カードのフリップを防ぐ
     e.preventDefault() // デフォルト動作を防ぐ
@@ -191,16 +179,7 @@ export default function CardViewer({
                     {currentCard.phonetics.text}
                   </p>
                   {currentCard.phonetics.audio && (
-                    <button
-                      type="button"
-                      className="bg-blue-500 hover:bg-blue-600 text-white rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2"
-                      aria-label="音声を聞く"
-                      onClick={handleAudioPlay}
-                      onMouseDown={(e) => e.stopPropagation()}
-                      onTouchStart={(e) => e.stopPropagation()}
-                    >
-                      <FaVolumeUp size={20} />
-                    </button>
+                    <AudioPlayButton audioUrl={currentCard.phonetics.audio} />
                   )}
                 </div>
               )}
@@ -215,6 +194,28 @@ export default function CardViewer({
           >
             {currentCard ? (
               <div className="p-6">
+                {/* ブックマークボタン */}
+                {currentCard && user && (
+                  <button
+                    type="button"
+                    className="absolute top-4 right-4 text-gray-400 hover:text-yellow-500 transition-colors z-10"
+                    aria-label={
+                      isCardBookmarked(currentCard.id)
+                        ? 'ブックマークを削除'
+                        : 'ブックマークに追加'
+                    }
+                    onClick={handleBookmarkToggle}
+                    onMouseDown={(e) => e.stopPropagation()}
+                    onTouchStart={(e) => e.stopPropagation()}
+                    disabled={bookmarkLoading}
+                  >
+                    {isCardBookmarked(currentCard.id) ? (
+                      <FaBookmark size={28} className="text-yellow-500" />
+                    ) : (
+                      <FaRegBookmark size={28} />
+                    )}
+                  </button>
+                )}
                 {/* ボディ */}
                 <main className="card-body">
                   {/* 定義 */}

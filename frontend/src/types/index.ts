@@ -83,3 +83,5 @@ export interface Bookmark {
 export interface NewBookmark {
   card_id: string
 }
+// 権限レベルの定義
+export type PermissionLevel = 'owner' | 'public' | 'readonly'

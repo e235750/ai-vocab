@@ -1,19 +1,18 @@
 'use client'
 import { useParams } from 'next/navigation'
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { useDeckStore } from '@/stores/deckStore'
 import { useAuth } from '@/hooks/useAuth'
+import { useDeckMenuItems } from '@/hooks/useMenuItems'
 import { addCard, updateCard, deleteCard, deleteWordbook } from '@/lib/api/db'
 import WordList from '@/components/WordList'
 import Loading from '@/components/Loading'
 import AddCardForm from '@/components/cardForm/AddCardForm'
 import EditDeck from '@/components/wordBook/EditDeck'
 import DuplicateDeck from '@/components/wordBook/DuplicateDeck'
-import { Card, NewCard, Deck } from '@/types'
-import { RiDeleteBin5Line } from 'react-icons/ri'
-import { LuSquarePen } from 'react-icons/lu'
-import { IoDuplicateOutline } from 'react-icons/io5'
+import DropdownMenu from '@/components/DropdownMenu'
+import { Card, NewCard, Deck, PermissionLevel } from '@/types'
 
 export default function Page() {
   const { id } = useParams()
@@ -24,8 +23,6 @@ export default function Page() {
   const [isAddingCard, setIsAddingCard] = useState(false)
   const [isEditOpen, setIsEditOpen] = useState(false)
   const [isDuplicateOpen, setIsDuplicateOpen] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   const { loading, error, initializeDeckData, fetchWordsInDeck, decks } =
@@ -112,73 +109,45 @@ export default function Page() {
       console.error('単語帳の削除に失敗しました:', error)
       alert('単語帳の削除に失敗しました。もう一度お試しください。')
     }
-
-    setIsMenuOpen(false)
   }
 
   const handleEdit = () => {
     setIsEditOpen(true)
-    setIsMenuOpen(false)
   }
 
   const handleDuplicate = () => {
     setIsDuplicateOpen(true)
-    setIsMenuOpen(false)
   }
 
   const handleDelete = () => {
     handleDeleteWordbook()
   }
 
+  // 権限レベルを判定
+  const isOwner =
+    currentDeck && user && currentDeck.user_name === user.displayName
+  const permission: PermissionLevel = isOwner
+    ? 'owner'
+    : currentDeck?.is_public
+    ? 'public'
+    : 'readonly'
+
+  // カスタムフックを使用してメニューアイテムを取得
+  const menuItems = useDeckMenuItems({
+    deckId: wordbookId,
+    permission,
+    onEdit: handleEdit,
+    onDuplicate: handleDuplicate,
+    onDelete: handleDelete,
+  })
+
   const handleEditClose = () => {
     setIsEditOpen(false)
-  }
-
-  const handleEditUpdate = async () => {
-    if (!user || !wordbookId) return
-
-    try {
-      const idToken = await user.getIdToken()
-      const { deckName: updatedDeckName } = await initializeDeckData(
-        wordbookId,
-        idToken
-      )
-      setDeckName(updatedDeckName)
-    } catch (error) {
-      console.error('単語帳情報の再取得に失敗しました:', error)
-    }
   }
 
   const handleDuplicateClose = () => {
     setIsDuplicateOpen(false)
   }
-
-  const handleDuplicateCompleted = () => {
-    alert('単語帳を複製しました')
-    router.push('/')
-  }
-
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsMenuOpen(!isMenuOpen)
-  }
-
-  // メニューの外側をクリックしたら閉じる
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false)
-      }
-    }
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isMenuOpen])
 
   useEffect(() => {
     if (!wordbookId || !user) return
@@ -237,80 +206,44 @@ export default function Page() {
               <h1 className="text-3xl font-bold text-gray-900 mb-2">
                 {deckName || '単語帳'}
               </h1>
-              <p className="text-gray-600">
-                {words.length}個の単語が登録されています
-              </p>
+              <div className="flex items-center gap-2 text-gray-600">
+                <p>{words.length}個の単語が登録されています</p>
+                {permission !== 'owner' && currentDeck?.user_name && (
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                    作成者: {currentDeck.user_name}
+                  </span>
+                )}
+              </div>
             </div>
             <div className="flex items-center gap-3">
               {/* 3点リーダーメニュー */}
-              <div className="relative" ref={menuRef}>
-                <button
-                  onClick={handleMenuClick}
-                  className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-                  aria-label="メニューを開く"
-                >
-                  <svg
-                    className="w-5 h-5 text-gray-500"
-                    fill="currentColor"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-                  </svg>
-                </button>
-
-                {/* ドロップダウンメニュー */}
-                {isMenuOpen && (
-                  <div className="absolute right-0 top-full mt-1 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                    <button
-                      onClick={handleEdit}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                    >
-                      <LuSquarePen className="w-4 h-4 mr-3" />
-                      編集
-                    </button>
-
-                    <button
-                      onClick={handleDuplicate}
-                      className="flex items-center w-full px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 transition-colors"
-                    >
-                      <IoDuplicateOutline className="w-4 h-4 mr-3" />
-                      複製
-                    </button>
-
-                    <hr className="my-1" />
-
-                    <button
-                      onClick={handleDelete}
-                      className="flex items-center w-full px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors"
-                    >
-                      <RiDeleteBin5Line className="w-4 h-4 mr-3" />
-                      削除
-                    </button>
-                  </div>
-                )}
+              <div className="relative">
+                <DropdownMenu items={menuItems} />
               </div>
 
-              {/* 単語追加ボタン */}
-              <button
-                onClick={() => setIsAddingCard(!isAddingCard)}
-                className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              {/* 単語追加ボタン - 所有者のみ表示 */}
+              {permission === 'owner' && (
+                <button
+                  onClick={() => setIsAddingCard(!isAddingCard)}
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                {isAddingCard ? '閉じる' : '単語を追加'}
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  {isAddingCard ? '閉じる' : '単語を追加'}
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -330,8 +263,8 @@ export default function Page() {
           <div className="flex justify-center">
             <WordList
               words={words}
-              onUpdate={handleUpdateCard}
-              onDelete={handleDeleteCard}
+              onUpdate={permission === 'owner' ? handleUpdateCard : undefined}
+              onDelete={permission === 'owner' ? handleDeleteCard : undefined}
             />
           </div>
         ) : (
@@ -354,47 +287,51 @@ export default function Page() {
                 単語がありません
               </h3>
               <p className="text-gray-500 mb-4">
-                この単語帳にはまだ単語が登録されていません。
+                {permission === 'owner'
+                  ? 'この単語帳にはまだ単語が登録されていません。'
+                  : 'この単語帳には単語が登録されていません。'}
               </p>
-              <button
-                onClick={() => setIsAddingCard(true)}
-                className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-5 w-5"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
+              {permission === 'owner' && (
+                <button
+                  onClick={() => setIsAddingCard(true)}
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M12 4v16m8-8H4"
-                  />
-                </svg>
-                最初の単語を追加
-              </button>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M12 4v16m8-8H4"
+                    />
+                  </svg>
+                  最初の単語を追加
+                </button>
+              )}
             </div>
           </div>
         )}
       </div>
 
-      {/* 編集モーダル */}
-      <EditDeck
-        isOpen={isEditOpen}
-        onClose={handleEditClose}
-        deck={currentDeck}
-        onUpdate={handleEditUpdate}
-      />
+      {/* 編集モーダル - 所有者のみ */}
+      {permission === 'owner' && (
+        <EditDeck
+          isOpen={isEditOpen}
+          onClose={handleEditClose}
+          deck={currentDeck}
+        />
+      )}
 
       {/* 複製モーダル */}
       <DuplicateDeck
         isOpen={isDuplicateOpen}
         onClose={handleDuplicateClose}
         sourceDeck={currentDeck}
-        onDuplicated={handleDuplicateCompleted}
       />
     </div>
   )

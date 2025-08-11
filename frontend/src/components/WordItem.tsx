@@ -1,12 +1,17 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, NewCard } from '@/types'
 import EditFormCore from './cardForm/EditFormCore'
+import DropdownMenu from './DropdownMenu'
+import AudioPlayButton from './AudioPlayButton'
+import { useWordMenuItems } from '@/hooks/useMenuItems'
+import { PermissionLevel } from '@/types'
 import { FaBookmark, FaRegBookmark } from 'react-icons/fa'
 import { useAuth } from '@/hooks/useAuth'
 import { useBookmarkStore } from '@/stores/bookmarkStore'
 
 type WordItemProps = {
   word: Card
+  permission?: PermissionLevel
   onEdit?: (word: Card) => void
   onUpdate?: (wordId: string, updatedCard: NewCard) => void
   onDelete?: (wordId: string) => void
@@ -14,14 +19,13 @@ type WordItemProps = {
 
 export default function WordItem({
   word,
+  permission = 'owner', // デフォルトは所有者権限
   onEdit,
   onUpdate,
   onDelete,
 }: WordItemProps) {
   const [isOpen, setIsOpen] = useState(false)
-  const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
-  const menuRef = useRef<HTMLDivElement>(null)
   const { user } = useAuth()
   const {
     toggleBookmark,
@@ -50,31 +54,6 @@ export default function WordItem({
     (word.example_sentences && word.example_sentences.length > 0) ||
     (word.phonetics && (word.phonetics.text || word.phonetics.audio))
 
-  // メニューの外側をクリックしたら閉じる
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setIsMenuOpen(false)
-      }
-    }
-
-    if (isMenuOpen) {
-      document.addEventListener('mousedown', handleClickOutside)
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [isMenuOpen])
-
-  const handleEditClick = () => {
-    setIsMenuOpen(false)
-    setIsEditMode(true)
-    if (onEdit) {
-      onEdit(word)
-    }
-  }
-
   const handleEditSubmit = (updatedCard: NewCard) => {
     if (onUpdate) {
       onUpdate(word.id, updatedCard)
@@ -84,18 +63,6 @@ export default function WordItem({
 
   const handleEditCancel = () => {
     setIsEditMode(false)
-  }
-
-  const handleDeleteClick = () => {
-    setIsMenuOpen(false)
-    if (!window.confirm('このカードを削除しますか？')) return
-    if (onDelete) {
-      onDelete(word.id)
-    }
-    // 編集モードを終了
-    setIsEditMode(false)
-    // アコーディオンを閉じる
-    setIsOpen(false)
   }
 
   const handleBookmarkToggle = async (e: React.MouseEvent) => {
@@ -115,23 +82,37 @@ export default function WordItem({
     }
   }
 
-  const handleMenuClick = (e: React.MouseEvent) => {
-    e.stopPropagation()
-    setIsMenuOpen(!isMenuOpen)
-  }
-
   const handleCardClick = () => {
     if (hasDetails) {
       setIsOpen(!isOpen)
     }
   }
 
+  // ドロップダウンメニューのアイテムを定義
+  const menuItems = useWordMenuItems({
+    permission,
+    onEdit: () => {
+      setIsEditMode(true)
+      if (onEdit) {
+        onEdit(word)
+      }
+    },
+    onDelete: () => {
+      if (!window.confirm('このカードを削除しますか？')) return
+      if (onDelete) {
+        onDelete(word.id)
+      }
+      setIsEditMode(false)
+      setIsOpen(false)
+    },
+  })
+
   return (
     <div className="border-b last:border-b-0 border-gray-200 hover:bg-gray-50/50 transition-colors">
       {/* --- アコーディオンヘッダー --- */}
       <div className="relative p-5 sm:px-6 sm:py-6">
         {/* 右上のボタンエリア */}
-        <div className="absolute top-3 right-3 flex items-center gap-2">
+        <div className="absolute top-3 right-3">
           {/* ブックマークボタン */}
           {user && (
             <button
@@ -151,41 +132,12 @@ export default function WordItem({
               )}
             </button>
           )}
-
-          {/* 3点リーダーメニュー */}
-          <div ref={menuRef}>
-            <button
-              onClick={handleMenuClick}
-              className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-              aria-label="メニューを開く"
-            >
-              <svg
-                className="w-5 h-5 text-gray-500"
-                fill="currentColor"
-                viewBox="0 0 20 20"
-              >
-                <path d="M10 6a2 2 0 110-4 2 2 0 010 4zM10 12a2 2 0 110-4 2 2 0 010 4zM10 18a2 2 0 110-4 2 2 0 010 4z" />
-              </svg>
-            </button>
-
-            {/* ドロップダウンメニュー */}
-            {isMenuOpen && (
-              <div className="absolute right-0 top-full mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50">
-                <button
-                  onClick={handleEditClick}
-                  className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 rounded-t-lg transition-colors"
-                >
-                  編集
-                </button>
-                <button
-                  onClick={handleDeleteClick}
-                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 rounded-b-lg transition-colors"
-                >
-                  削除
-                </button>
-              </div>
-            )}
-          </div>
+          {/* ドロップダウンメニュー */}
+          <DropdownMenu
+            items={menuItems}
+            buttonClassName="p-2 hover:bg-gray-200 rounded-full transition-colors"
+            menuClassName="absolute right-0 top-8 mt-1 w-32 bg-white border border-gray-200 rounded-lg shadow-lg z-50"
+          />
         </div>
 
         <div className="flex justify-between items-center">
@@ -291,15 +243,7 @@ export default function WordItem({
                           </span>
                         )}
                         {word.phonetics.audio && (
-                          <button
-                            className="w-10 h-10 bg-blue-500 hover:bg-blue-600 text-white rounded-full flex items-center justify-center transition-colors"
-                            aria-label="音声を聞く"
-                            onClick={() => {
-                              // 音声再生の実装（将来的に）
-                            }}
-                          >
-                            🔊
-                          </button>
+                          <AudioPlayButton audioUrl={word.phonetics.audio} />
                         )}
                       </div>
                     </div>
