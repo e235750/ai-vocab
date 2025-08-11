@@ -1,10 +1,13 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Card, NewCard } from '@/types'
 import EditFormCore from './cardForm/EditFormCore'
 import DropdownMenu from './DropdownMenu'
 import AudioPlayButton from './AudioPlayButton'
 import { useWordMenuItems } from '@/hooks/useMenuItems'
 import { PermissionLevel } from '@/types'
+import { FaBookmark, FaRegBookmark } from 'react-icons/fa'
+import { useAuth } from '@/hooks/useAuth'
+import { useBookmarkStore } from '@/stores/bookmarkStore'
 
 type WordItemProps = {
   word: Card
@@ -23,6 +26,27 @@ export default function WordItem({
 }: WordItemProps) {
   const [isOpen, setIsOpen] = useState(false)
   const [isEditMode, setIsEditMode] = useState(false)
+  const { user } = useAuth()
+  const {
+    toggleBookmark,
+    loadBookmarks,
+    isCardBookmarked,
+    loading: bookmarkLoading,
+  } = useBookmarkStore()
+
+  // ブックマーク一覧を初期読み込み
+  useEffect(() => {
+    const loadBookmarksData = async () => {
+      if (user) {
+        try {
+          await loadBookmarks()
+        } catch (error) {
+          console.error('Error loading bookmarks:', error)
+        }
+      }
+    }
+    loadBookmarksData()
+  }, [user, loadBookmarks])
 
   // 詳細情報がある場合のみアコーディオンを開けるようにする
   const hasDetails =
@@ -39,6 +63,23 @@ export default function WordItem({
 
   const handleEditCancel = () => {
     setIsEditMode(false)
+  }
+
+  const handleBookmarkToggle = async (e: React.MouseEvent) => {
+    e.stopPropagation() // アコーディオンの開閉を防ぐ
+    e.preventDefault()
+
+    if (!word || !user) {
+      alert('認証エラーが発生しました')
+      return
+    }
+
+    try {
+      await toggleBookmark(word.id)
+    } catch (error) {
+      console.error('Error toggling bookmark:', error)
+      alert('ブックマークの操作に失敗しました')
+    }
   }
 
   const handleCardClick = () => {
@@ -72,6 +113,25 @@ export default function WordItem({
       <div className="relative p-5 sm:px-6 sm:py-6">
         {/* 右上のボタンエリア */}
         <div className="absolute top-3 right-3">
+          {/* ブックマークボタン */}
+          {user && (
+            <button
+              onClick={handleBookmarkToggle}
+              className="p-2 text-gray-400 hover:text-yellow-500 transition-colors rounded-full hover:bg-gray-100"
+              aria-label={
+                isCardBookmarked(word.id)
+                  ? 'ブックマークを削除'
+                  : 'ブックマークに追加'
+              }
+              disabled={bookmarkLoading}
+            >
+              {isCardBookmarked(word.id) ? (
+                <FaBookmark size={16} className="text-yellow-500" />
+              ) : (
+                <FaRegBookmark size={16} />
+              )}
+            </button>
+          )}
           {/* ドロップダウンメニュー */}
           <DropdownMenu
             items={menuItems}
@@ -83,7 +143,7 @@ export default function WordItem({
         <div className="flex justify-between items-center">
           {isEditMode ? (
             // 編集モード
-            <div className="flex-1 pr-12">
+            <div className="flex-1 pr-20">
               <EditFormCore
                 cardData={word}
                 onSubmit={handleEditSubmit}
@@ -95,7 +155,7 @@ export default function WordItem({
           ) : (
             // 通常表示モード
             <div
-              className="flex-1 min-w-0 cursor-pointer pr-12"
+              className="flex-1 min-w-0 cursor-pointer pr-20"
               onClick={handleCardClick}
             >
               {/* 英単語表示 */}

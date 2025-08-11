@@ -71,5 +71,17 @@ export interface Deck {
   user_name?: string
 }
 
+// ブックマークの型定義
+export interface Bookmark {
+  id: string
+  card_id: string
+  user_id: string
+  created_at: string
+}
+
+// 新規ブックマークの型定義
+export interface NewBookmark {
+  card_id: string
+}
 // 権限レベルの定義
 export type PermissionLevel = 'owner' | 'public' | 'readonly'
