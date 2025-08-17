@@ -24,8 +24,7 @@ export default function SignUpForm() {
   const doSignInWithGoogle = async () => {
     try {
       await signInWithGoogle()
-      router.push('/'
-      console.log('User signed in with Google successfully')
+      router.push('/')
     } catch (error) {
       console.error('Error signing in with Google:', error)
     }

@@ -21,9 +21,15 @@ app = FastAPI(lifespan=lifespan)
 async def root():
     return {"message": "AI Vocabulary Backend API"}
 
+@app.get("/health")
+async def health_check():
+    return {"status": "healthy", "message": "Backend is running"}
+
 origins = [
     "http://frontend:3000",
     "http://localhost:3000",
+    "https://nginx:8080",
+    "http://localhost:8080"
 ]
 
 app.add_middleware(

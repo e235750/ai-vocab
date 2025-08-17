@@ -8,9 +8,15 @@ type EditDeckProps = {
   isOpen: boolean
   onClose: () => void
   deck: Deck | null
+  onUpdate: () => Promise<void>
 }
 
-export default function EditDeck({ isOpen, onClose, deck }: EditDeckProps) {
+export default function EditDeck({
+  isOpen,
+  onClose,
+  deck,
+  onUpdate,
+}: EditDeckProps) {
   const [isLoading, setIsLoading] = useState(false)
   const { updateDeck } = useDeckStore()
   const { user } = useAuth()
@@ -26,11 +32,12 @@ export default function EditDeck({ isOpen, onClose, deck }: EditDeckProps) {
       const updatedData: DeckData = {
         ...data,
         num_words: deck.num_words, // 既存の単語数を保持
-        user_name: user.displayName || user.email || 'ゲストユーザー'
+        user_name: user.displayName || user.email || 'ゲストユーザー',
       }
 
       const idToken = await user.getIdToken()
       await updateDeck(deck.id, updatedData, idToken)
+      await onUpdate() // 親コンポーネントの更新を実行
       onClose()
     } catch (error) {
       console.error('Error updating deck:', error)

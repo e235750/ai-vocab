@@ -1,7 +1,4 @@
-# デフォルトDockerfile（開発環境用）
-# 本番環境: Dockerfile.prod
-# 開発環境: Dockerfile.dev
-
+# 開発環境用Dockerfile
 FROM node:20-alpine
 
 WORKDIR /app
@@ -12,11 +9,11 @@ COPY package*.json ./
 # 依存関係をインストール
 RUN npm ci
 
-# ソースコードをコピー
-COPY . .
+# ホットリロード用のnodemon追加
+RUN npm install -g nodemon
 
 # 開発用ポートを公開
 EXPOSE 3000
 
-# 開発サーバーを起動
+# 開発サーバーを起動（ホットリロード有効）
 CMD ["npm", "run", "dev"]

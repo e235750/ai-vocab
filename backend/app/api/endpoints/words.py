@@ -12,7 +12,7 @@ router = APIRouter()
 
 
 @router.get(
-    "/{word}",
+    "/{word}/",
     response_model=WordGenerated,
     summary="単語情報をAIで拡張して取得",
     description="Firestoreの辞書データを元に、AIが要約・整形した単語情報を返す。"
@@ -61,7 +61,7 @@ async def create_word(request: WordRequest, db: firestore.Client = Depends(get_d
 
     return WordResponse(**word_data)
 
-@router.put("/{word_id}", response_model=WordResponse, status_code=status.HTTP_200_OK)
+@router.put("/{word_id}/", response_model=WordResponse, status_code=status.HTTP_200_OK)
 async def update_word(
     word_id: str,
     request: WordRequest,
@@ -94,7 +94,7 @@ async def update_word(
 
     return WordResponse(**{**word_doc.to_dict(), **updated_data, "id": word_id})
 
-@router.delete("/{word_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{word_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_word(
     word_id: str,
     db: firestore.Client = Depends(get_db),

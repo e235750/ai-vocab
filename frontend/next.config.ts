@@ -1,50 +1,34 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // 画像の最適化設定
-  images: {
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'lh3.googleusercontent.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh4.googleusercontent.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh5.googleusercontent.com',
-        port: '',
-        pathname: '/**',
-      },
-      {
-        protocol: 'https',
-        hostname: 'lh6.googleusercontent.com',
-        port: '',
-        pathname: '/**',
-      },
-    ],
+  // 本番用: allowedOriginsは本番ドメインのみ
+  experimental: {
+    serverActions: {
+      allowedOrigins: [
+        'https://word-wise.jp',
+        'http://localhost:3000',
+        'https://localhost:3000',
+      ],
+    },
   },
-  // 非同期でヘッダー情報を返す関数を定義
+  images: {
+    unoptimized: true,
+  },
   async headers() {
     return [
       {
-        // アプリケーションのすべてのパスに適用
         source: '/:path*',
         headers: [
           {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups', // ポップアップを許可
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
         ],
       },
     ]
   },
+  // 本番用: output: 'standalone' を推奨
+  output: 'standalone',
 }
 
 export default nextConfig
