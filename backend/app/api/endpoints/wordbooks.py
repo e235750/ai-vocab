@@ -39,7 +39,7 @@ async def create_wordbook(request: WordBook, db: firestore.Client = Depends(get_
     return wordbook_data
 
 @router.post(
-    "/{wordbook_id}/duplicate",
+    "/{wordbook_id}/duplicate/",
     status_code=status.HTTP_201_CREATED,
     response_model=WordBookResponse,
     summary="単語帳を複製",
@@ -117,19 +117,26 @@ async def duplicate_wordbook(
     
     return WordBookResponse(**new_wordbook_data)
 
+from fastapi import Request
+
 @router.get(
-    "/",
-    summary="ユーザの単語帳を取得",
-    response_model=List[WordBookResponse],
-    description="指定されたユーザIDに紐づく単語帳のリストを取得する"
+        "/",
+        summary="ユーザの単語帳を取得",
+        response_model=List[WordBookResponse],
+        description="指定されたユーザIDに紐づく単語帳のリストを取得する"
 )
-async def get_owned_wordbooks(db: firestore.Client = Depends(get_db), uid: str = Depends(get_current_user_uid)):
+async def get_owned_wordbooks(request: Request, db: firestore.Client = Depends(get_db), uid: str = Depends(get_current_user_uid)):
+    # デバッグ用: リクエストヘッダーとuidを出力
+    print("=== [DEBUG] /api/wordbooks/ Request Headers ===")
+    for k, v in request.headers.items():
+        print(f"{k}: {v}")
+    print(f"=== [DEBUG] uid: {uid}")
     wordbooks_ref = db.collection("wordbooks").where("owner_id", "==", uid)
     docs = wordbooks_ref.stream()
     return [WordBookResponse(**doc.to_dict()) for doc in docs]
 
 @router.get(
-        "/public",
+        "/public/",
         summary="公開単語帳を取得",
         response_model=List[WordBookResponse],
         description="公開されている単語帳のリストを取得する"
@@ -148,7 +155,7 @@ async def get_public_wordbooks(db: firestore.Client = Depends(get_db), uid: str 
 
     return result
 
-@router.get("/{wordbook_id}/words",
+@router.get("/{wordbook_id}/words/",
     response_model=List[WordResponse],
     summary="単語帳の単語を取得",
     description="指定された単語帳IDに紐づく単語のリストを取得する"
@@ -176,7 +183,7 @@ async def get_words_in_wordbook(wordbook_id: str, db: firestore.Client = Depends
     words = words_query.stream()
     return [WordResponse(**doc.to_dict()) for doc in words]
 
-@router.put("/{wordbook_id}",
+@router.put("/{wordbook_id}/",
     response_model=WordBookResponse,
     summary="単語帳を更新",
     description="指定された単語帳IDの単語帳情報を更新する"

@@ -3,7 +3,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
 } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
 import { auth } from './config'
@@ -17,8 +17,9 @@ import { auth } from './config'
 export const register = async (email: string, password: string) => {
   try {
     await createUserWithEmailAndPassword(auth, email, password)
-  } catch (error: FirebaseError) {
-    if (error.code === 'auth/email-already-in-use') {
+  } catch (error) {
+    const firebaseError = error as FirebaseError
+    if (firebaseError.code === 'auth/email-already-in-use') {
       alert('このメールアドレスはすでに使用されています。')
       throw new Error('このメールアドレスはすでに使用されています。')
     } else {
@@ -62,9 +63,9 @@ export const logout = async () => {
 export const signInWithGoogle = async () => {
   const provider = new GoogleAuthProvider()
   try {
-    return await signInWithPopup(auth, provider)
+    return await signInWithRedirect(auth, provider)
   } catch (error) {
-    console.error('Error signing in with Google:', error)
+    console.error('Error signing in with Google (redirect):', error)
     throw error
   }
 }

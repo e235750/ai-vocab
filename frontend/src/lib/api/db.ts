@@ -1,16 +1,6 @@
 'use server'
 import { NewCard, DeckData, WordBook } from '@/types'
 
-// API URLを取得する関数
-function getApiUrl(): string {
-  // ブラウザ環境では localhost を使用
-  if (typeof window !== 'undefined') {
-    return 'http://localhost:8000/api'
-  }
-  // サーバー環境では環境変数を使用
-  return process.env.NEXT_PUBLIC_API_URL || 'http://backend:8000/api'
-}
-
 /**
  * 単語カードをデータベースに追加する関数
  * @param card
@@ -24,30 +14,40 @@ export async function addCard(card: NewCard, idToken: string) {
   if (!idToken) {
     return { error: 'User authentication token is required' }
   }
-
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/words/`
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${idToken}`,
+  }
+  console.info('[addCard] Fetching:', url)
+  console.info('[addCard] Headers:', headers)
   try {
-    const response = await fetch(`${getApiUrl()}/words/`, {
+    const response = await fetch(url, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${idToken}`,
-      },
+      headers,
       body: JSON.stringify(card),
     })
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      return { error: errorData.error || 'Failed to fetch word info' }
+    console.info('[addCard] Response status:', response.status)
+    let responseBody
+    try {
+      responseBody = await response.clone().json()
+      console.info('[addCard] Response body:', responseBody)
+    } catch (_e) {
+      responseBody = null
+      console.warn('[addCard] Could not parse response as JSON')
     }
-
-    const data = await response.json()
-    return data
+    if (!response.ok) {
+      const errorMsg = responseBody?.error || 'Failed to add card'
+      console.error('[addCard] Error:', errorMsg)
+      return { error: errorMsg }
+    }
+    return responseBody
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Error adding card:', error.message)
+      console.error('[addCard] Fetch error:', error.message, error)
       return { error: error.message }
     }
-    console.error('Unknown error adding card:', error)
+    console.error('[addCard] Unknown error:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -65,30 +65,36 @@ export async function deleteCard(cardId: string, idToken: string) {
   if (!idToken) {
     return { error: 'User authentication token is required' }
   }
-
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/words/${cardId}/`
+  const headers = { Authorization: `Bearer ${idToken}` }
+  console.info('[deleteCard] Fetching:', url)
+  console.info('[deleteCard] Headers:', headers)
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/words/${cardId}`,
-      {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      return { error: errorData.error || 'Failed to delete card' }
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers,
+    })
+    console.info('[deleteCard] Response status:', response.status)
+    let responseBody
+    try {
+      responseBody = await response.clone().json()
+      console.info('[deleteCard] Response body:', responseBody)
+    } catch (_e) {
+      responseBody = null
+      console.warn('[deleteCard] Could not parse response as JSON')
     }
-
+    if (!response.ok) {
+      const errorMsg = responseBody?.error || 'Failed to delete card'
+      console.error('[deleteCard] Error:', errorMsg)
+      return { error: errorMsg }
+    }
     return { success: true }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Error deleting card:', error.message)
+      console.error('[deleteCard] Fetch error:', error.message, error)
       return { error: error.message }
     }
-    console.error('Unknown error deleting card:', error)
+    console.error('[deleteCard] Unknown error:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -106,43 +112,58 @@ export async function getWordsInWordbook(wordbookId: string, idToken: string) {
   if (!idToken) {
     return { error: 'User authentication token is required' }
   }
-
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${wordbookId}/words/`
+  const headers = { Authorization: `Bearer ${idToken}` }
+  console.info('[getWordsInWordbook] Fetching:', url)
+  console.info('[getWordsInWordbook] idToken:', idToken)
+  console.info('[getWordsInWordbook] Headers:', headers)
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${wordbookId}/words`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+    })
+    console.info('[getWordsInWordbook] Response status:', response.status)
+    // レスポンスヘッダーを全て出力
+    console.info(
+      '[getWordsInWordbook] Response headers:',
+      JSON.stringify([...response.headers])
     )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('Error fetching words in wordbook:', errorData.error)
-      return { error: errorData.error || 'Failed to fetch words in wordbook' }
+    let responseBody
+    try {
+      responseBody = await response.clone().json()
+      console.info('[getWordsInWordbook] Response body:', responseBody)
+    } catch (_e) {
+      responseBody = null
+      console.warn('[getWordsInWordbook] Could not parse response as JSON')
     }
-
-    const data = await response.json()
-
+    if (!response.ok) {
+      const errorMsg =
+        responseBody?.error || 'Failed to fetch words in wordbook'
+      console.error('[getWordsInWordbook] Error:', errorMsg)
+      // 追加: 401/403時はidTokenの再取得を促す
+      if (response.status === 401 || response.status === 403) {
+        console.error(
+          '[getWordsInWordbook] Auth error: idToken expired or invalid'
+        )
+      }
+      return { error: errorMsg }
+    }
     // フロントエンド側でcreated_atによるソートを行う
-    if (Array.isArray(data)) {
-      const sortedData = data.sort((a, b) => {
+    if (Array.isArray(responseBody)) {
+      const sortedData = responseBody.sort((a, b) => {
         const dateA = new Date(a.created_at)
         const dateB = new Date(b.created_at)
         return dateA.getTime() - dateB.getTime() // 昇順（古い順）
       })
       return sortedData
     }
-
-    return data
+    return responseBody
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Error fetching words in wordbook:', error.message)
+      console.error('[getWordsInWordbook] Fetch error:', error.message, error)
       return { error: error.message }
     }
-    console.error('Unknown error fetching words in wordbook:', error)
+    console.error('[getWordsInWordbook] Unknown error:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -160,33 +181,40 @@ export async function addWordbook(wordbook: DeckData, idToken: string) {
   if (!idToken) {
     return { error: 'User authentication token is required' }
   }
-
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/`
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${idToken}`,
+  }
+  console.info('[addWordbook] Fetching:', url)
+  console.info('[addWordbook] Headers:', headers)
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify(wordbook),
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      return { error: errorData.error || 'Failed to create wordbook' }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(wordbook),
+    })
+    console.info('[addWordbook] Response status:', response.status)
+    let responseBody
+    try {
+      responseBody = await response.clone().json()
+      console.info('[addWordbook] Response body:', responseBody)
+    } catch (_e) {
+      responseBody = null
+      console.warn('[addWordbook] Could not parse response as JSON')
     }
-
-    const data = await response.json()
-    return data
+    if (!response.ok) {
+      const errorMsg = responseBody?.error || 'Failed to create wordbook'
+      console.error('[addWordbook] Error:', errorMsg)
+      return { error: errorMsg }
+    }
+    return responseBody
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Error creating wordbook:', error.message)
+      console.error('[addWordbook] Fetch error:', error.message, error)
       return { error: error.message }
     }
-    console.error('Unknown error creating wordbook:', error)
+    console.error('[addWordbook] Unknown error:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -213,32 +241,40 @@ export async function updateWordbook(
     return { error: 'User authentication token is required' }
   }
 
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${wordbookId}/`
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${idToken}`,
+  }
+  console.info('[updateWordbook] Fetching:', url)
+  console.info('[updateWordbook] Headers:', headers)
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${wordbookId}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify(wordbook),
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      return { error: errorData.error || 'Failed to update wordbook' }
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(wordbook),
+    })
+    console.info('[updateWordbook] Response status:', response.status)
+    let responseBody
+    try {
+      responseBody = await response.clone().json()
+      console.info('[updateWordbook] Response body:', responseBody)
+    } catch (_e) {
+      responseBody = null
+      console.warn('[updateWordbook] Could not parse response as JSON')
     }
-
-    const data = await response.json()
-    return data
+    if (!response.ok) {
+      const errorMsg = responseBody?.error || 'Failed to update wordbook'
+      console.error('[updateWordbook] Error:', errorMsg)
+      return { error: errorMsg }
+    }
+    return responseBody
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Error updating wordbook:', error.message)
+      console.error('[updateWordbook] Fetch error:', error.message, error)
       return { error: error.message }
     }
-    console.error('Unknown error updating wordbook:', error)
+    console.error('[updateWordbook] Unknown error:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -265,32 +301,40 @@ export async function duplicateWordbook(
     return { error: 'User authentication token is required' }
   }
 
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${sourceWordbookId}/duplicate/`
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${idToken}`,
+  }
+  console.info('[duplicateWordbook] Fetching:', url)
+  console.info('[duplicateWordbook] Headers:', headers)
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${sourceWordbookId}/duplicate`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify(wordbook),
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      return { error: errorData.error || 'Failed to duplicate wordbook' }
+    const response = await fetch(url, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(wordbook),
+    })
+    console.info('[duplicateWordbook] Response status:', response.status)
+    let responseBody
+    try {
+      responseBody = await response.clone().json()
+      console.info('[duplicateWordbook] Response body:', responseBody)
+    } catch (_e) {
+      responseBody = null
+      console.warn('[duplicateWordbook] Could not parse response as JSON')
     }
-
-    const data = await response.json()
-    return data
+    if (!response.ok) {
+      const errorMsg = responseBody?.error || 'Failed to duplicate wordbook'
+      console.error('[duplicateWordbook] Error:', errorMsg)
+      return { error: errorMsg }
+    }
+    return responseBody
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Error duplicating wordbook:', error.message)
+      console.error('[duplicateWordbook] Fetch error:', error.message, error)
       return { error: error.message }
     }
-    console.error('Unknown error duplicating wordbook:', error)
+    console.error('[duplicateWordbook] Unknown error:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -309,29 +353,36 @@ export async function deleteWordbook(wordbookId: string, idToken: string) {
     return { error: 'User authentication token is required' }
   }
 
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${wordbookId}/`
+  const headers = { Authorization: `Bearer ${idToken}` }
+  console.info('[deleteWordbook] Fetching:', url)
+  console.info('[deleteWordbook] Headers:', headers)
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/${wordbookId}`,
-      {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      return { error: errorData.error || 'Failed to delete wordbook' }
+    const response = await fetch(url, {
+      method: 'DELETE',
+      headers,
+    })
+    console.info('[deleteWordbook] Response status:', response.status)
+    let responseBody
+    try {
+      responseBody = await response.clone().json()
+      console.info('[deleteWordbook] Response body:', responseBody)
+    } catch (_e) {
+      responseBody = null
+      console.warn('[deleteWordbook] Could not parse response as JSON')
     }
-
+    if (!response.ok) {
+      const errorMsg = responseBody?.error || 'Failed to delete wordbook'
+      console.error('[deleteWordbook] Error:', errorMsg)
+      return { error: errorMsg }
+    }
     return { success: true }
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Error deleting wordbook:', error.message)
+      console.error('[deleteWordbook] Fetch error:', error.message, error)
       return { error: error.message }
     }
-    console.error('Unknown error deleting wordbook:', error)
+    console.error('[deleteWordbook] Unknown error:', error)
     return { error: 'Unknown error' }
   }
 }
@@ -358,103 +409,130 @@ export async function updateCard(
     return { error: 'User authentication token is required' }
   }
 
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/words/${cardId}/`
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${idToken}`,
+  }
+  console.info('[updateCard] Fetching:', url)
+  console.info('[updateCard] Headers:', headers)
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/words/${cardId}`,
-      {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${idToken}`,
-        },
-        body: JSON.stringify(updatedCard),
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      return { error: errorData.error || 'Failed to update card' }
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify(updatedCard),
+    })
+    console.info('[updateCard] Response status:', response.status)
+    let responseBody
+    try {
+      responseBody = await response.clone().json()
+      console.info('[updateCard] Response body:', responseBody)
+    } catch (_e) {
+      responseBody = null
+      console.warn('[updateCard] Could not parse response as JSON')
     }
-
-    const data = await response.json()
-    return data
+    if (!response.ok) {
+      const errorMsg = responseBody?.error || 'Failed to update card'
+      console.error('[updateCard] Error:', errorMsg)
+      return { error: errorMsg }
+    }
+    return responseBody
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Error updating card:', error.message)
+      console.error('[updateCard] Fetch error:', error.message, error)
       return { error: error.message }
     }
-    console.error('Unknown error updating card:', error)
+    console.error('[updateCard] Unknown error:', error)
     return { error: 'Unknown error' }
   }
 }
 
 /**
  * ユーザの単語帳を取得する関数
- * @param deckId
  * @param idToken
  * @returns
  */
 export async function getOwnedWordbooks(idToken: string) {
   if (!idToken) {
+    console.error('[getOwnedWordbooks] No idToken provided')
     return { error: 'User authentication token is required' }
   }
 
   try {
-    const response = await fetch(`${getApiUrl()}/wordbooks/`, {
+    const url = `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/`
+    const headers = { Authorization: `Bearer ${idToken}` }
+    console.info('[getOwnedWordbooks] Fetching:', url)
+    console.info('[getOwnedWordbooks] Headers:', headers)
+
+    const response = await fetch(url, {
       method: 'GET',
-      headers: {
-        Authorization: `Bearer ${idToken}`,
-      },
+      headers,
     })
 
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('Error fetching owned wordbooks:', errorData.error)
-      return { error: errorData.error || 'Failed to fetch wordbooks' }
+    console.info('[getOwnedWordbooks] Response status:', response.status)
+
+    let responseBody
+    try {
+      responseBody = await response.clone().json()
+      console.info('[getOwnedWordbooks] Response body:', responseBody)
+    } catch (_e) {
+      responseBody = null
+      console.warn('[getOwnedWordbooks] Could not parse response as JSON')
     }
 
-    const data = await response.json()
-    return data
+    if (!response.ok) {
+      const errorMsg = responseBody?.error || 'Failed to fetch wordbooks'
+      console.error('[getOwnedWordbooks] Error:', errorMsg)
+      return { error: errorMsg }
+    }
+
+    return responseBody
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Error fetching owned wordbooks:', error.message)
+      console.error('[getOwnedWordbooks] Fetch error:', error.message, error)
       return { error: error.message }
     }
-    console.error('Unknown error fetching owned wordbooks:', error)
+    console.error('[getOwnedWordbooks] Unknown error:', error)
     return { error: 'Unknown error' }
   }
 }
 
 /**
  * 公開単語帳を取得する関数
+ * @param idToken
  * @returns
  */
 export async function getPublicWordbooks(idToken: string) {
+  const url = `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/public/`
+  const headers = { Authorization: `Bearer ${idToken}` }
+  console.info('[getPublicWordbooks] Fetching:', url)
+  console.info('[getPublicWordbooks] Headers:', headers)
   try {
-    const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/wordbooks/public`,
-      {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${idToken}`,
-        },
-      }
-    )
-
-    if (!response.ok) {
-      const errorData = await response.json()
-      console.error('Error fetching public wordbooks:', errorData.error)
-      return { error: errorData.error || 'Failed to fetch public wordbooks' }
+    const response = await fetch(url, {
+      method: 'GET',
+      headers,
+    })
+    console.info('[getPublicWordbooks] Response status:', response.status)
+    let responseBody
+    try {
+      responseBody = await response.clone().json()
+      console.info('[getPublicWordbooks] Response body:', responseBody)
+    } catch (_e) {
+      responseBody = null
+      console.warn('[getPublicWordbooks] Could not parse response as JSON')
     }
-
-    const data = await response.json()
-    return data
+    if (!response.ok) {
+      const errorMsg = responseBody?.error || 'Failed to fetch public wordbooks'
+      console.error('[getPublicWordbooks] Error:', errorMsg)
+      return { error: errorMsg }
+    }
+    return responseBody
   } catch (error: unknown) {
     if (error instanceof Error) {
-      console.error('Error fetching public wordbooks:', error.message)
+      console.error('[getPublicWordbooks] Fetch error:', error.message, error)
       return { error: error.message }
     }
-    console.error('Unknown error fetching public wordbooks:', error)
+    console.error('[getPublicWordbooks] Unknown error:', error)
     return { error: 'Unknown error' }
   }
 }

@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app'
-import { getAuth, Auth } from 'firebase/auth'
+import { getAuth, Auth, browserSessionPersistence, setPersistence } from 'firebase/auth'
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_API_KEY,
@@ -16,6 +16,12 @@ const app: FirebaseApp = !getApps().length
   ? initializeApp(firebaseConfig)
   : getApp()
 
+
 const auth: Auth = getAuth(app)
+
+// セッション永続性を明示的に設定（クライアントサイドのみ）
+if (typeof window !== 'undefined') {
+  setPersistence(auth, browserSessionPersistence)
+}
 
 export { app, auth }
