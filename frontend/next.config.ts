@@ -1,31 +1,34 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // Server Actions設定
+  // 本番用: allowedOriginsは本番ドメインのみ
   experimental: {
     serverActions: {
-      allowedOrigins: ['localhost:8080', 'localhost:3000'],
+      allowedOrigins: [
+        'https://word-wise.jp',
+        'http://localhost:3000',
+        'https://localhost:3000',
+      ],
     },
   },
-  // 画像の最適化設定 - 完全に無効化
   images: {
     unoptimized: true,
   },
-  // 非同期でヘッダー情報を返す関数を定義
   async headers() {
     return [
       {
-        // アプリケーションのすべてのパスに適用
         source: '/:path*',
         headers: [
           {
-            key: 'Cross-Origin-Opener-Policy',
-            value: 'same-origin-allow-popups', // ポップアップを許可
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload',
           },
         ],
       },
     ]
   },
+  // 本番用: output: 'standalone' を推奨
+  output: 'standalone',
 }
 
 export default nextConfig

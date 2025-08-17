@@ -3,7 +3,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
   GoogleAuthProvider,
-  signInWithPopup,
+  signInWithRedirect,
 } from 'firebase/auth'
 import { FirebaseError } from 'firebase/app'
 import { auth } from './config'
@@ -63,9 +63,9 @@ export const logout = async () => {
 export const signInWithGoogle = async () => {
   const provider = new GoogleAuthProvider()
   try {
-    return await signInWithPopup(auth, provider)
+    return await signInWithRedirect(auth, provider)
   } catch (error) {
-    console.error('Error signing in with Google:', error)
+    console.error('Error signing in with Google (redirect):', error)
     throw error
   }
 }

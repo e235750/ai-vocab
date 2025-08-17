@@ -151,6 +151,7 @@ export default function WordbooksPage() {
           isOpen={showEditModal}
           deck={selectedWordbook}
           onClose={handleModalClose}
+          onUpdate={handleRefresh}
         />
       )}
 
