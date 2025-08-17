@@ -1,0 +1,78 @@
+services:
+  # Nginx リバースプロキシ
+  nginx:
+    image: nginx:alpine
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl/conf:/etc/letsencrypt:ro
+      - ./ssl/www:/var/www/certbot
+      - nginx_logs:/var/log/nginx
+    depends_on:
+      - frontend
+      - backend
+    restart: unless-stopped
+
+  # Certbot SSL証明書管理
+  certbot:
+    image: certbot/certbot
+    volumes:
+      - ./ssl/conf:/etc/letsencrypt
+      - ./ssl/www:/var/www/certbot
+    entrypoint: "/bin/sh -c 'trap exit TERM; while :; do certbot renew; sleep 12h & wait $${!}; done;'"
+
+  # 本番環境用フロントエンド
+  frontend:
+    image: 927803461337.dkr.ecr.ap-southeast-2.amazonaws.com/word-wise:frontend-prod
+    environment:
+      - NODE_ENV=production
+    env_file:
+      - ./frontend/.env.production
+    expose:
+      - "3000"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:3000",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+  # 本番環境用バックエンド
+  backend:
+    image: 927803461337.dkr.ecr.ap-southeast-2.amazonaws.com/word-wise:backend-prod
+    environment:
+      - ENVIRONMENT=production
+      - PYTHONPATH=/app
+    env_file:
+      - ./backend/.env.production
+    expose:
+      - "8000"
+    restart: unless-stopped
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "wget",
+          "--no-verbose",
+          "--tries=1",
+          "--spider",
+          "http://localhost:8000/health",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+
+volumes:
+  nginx_logs:
