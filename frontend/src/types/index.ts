@@ -1,3 +1,14 @@
+// 検索クエリ用インターフェース
+export interface SearchQuery {
+  q?: string;
+  is_public?: boolean;
+  is_owned?: boolean;
+  min_words?: number;
+  sort_by?: string; // 例: "created_at"
+  sort_order?: string; // 例: "desc"
+  page?: number;
+  limit?: number;
+}
 // 意味の型定義
 export interface Definition {
   part_of_speech: string

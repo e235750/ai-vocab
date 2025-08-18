@@ -6,10 +6,8 @@ import math
 from typing import List, Optional
 
 from app.core.firebase import get_db
-from app.core.security import get_current_user_uid
 from ...schemas.wordbooks import WordBook, WordBookResponse, WordBookCreate, WordBookUpdate
 from ...schemas.words import WordResponse
-from ...schemas.search import SearchQuery, SearchResponse
 from ...schemas.search import SearchResponse
 from ...core.security import get_current_user_uid
 router = APIRouter()
@@ -126,11 +124,6 @@ from fastapi import Request
         description="指定されたユーザIDに紐づく単語帳のリストを取得する"
 )
 async def get_owned_wordbooks(request: Request, db: firestore.Client = Depends(get_db), uid: str = Depends(get_current_user_uid)):
-    # デバッグ用: リクエストヘッダーとuidを出力
-    print("=== [DEBUG] /api/wordbooks/ Request Headers ===")
-    for k, v in request.headers.items():
-        print(f"{k}: {v}")
-    print(f"=== [DEBUG] uid: {uid}")
     wordbooks_ref = db.collection("wordbooks").where("owner_id", "==", uid)
     docs = wordbooks_ref.stream()
     return [WordBookResponse(**doc.to_dict()) for doc in docs]
@@ -221,6 +214,7 @@ async def update_wordbook(
     return WordBookResponse(**updated_doc.to_dict())
 
 @router.get("/search",
+            
     response_model=SearchResponse,
     summary="単語帳を検索",
     description="クエリに基づいて単語帳を検索し、フィルタリング・ソート機能を提供する"
@@ -240,53 +234,49 @@ async def search_wordbooks(
     try:
         # ベースクエリでまず全ての単語帳を取得
         wordbooks_ref = db.collection("wordbooks")
-        
         # まずソートのみ適用
         if sort_order == "desc":
             wordbooks_ref = wordbooks_ref.order_by(sort_by, direction=firestore.Query.DESCENDING)
         else:
             wordbooks_ref = wordbooks_ref.order_by(sort_by, direction=firestore.Query.ASCENDING)
-        
         # 全件数を取得
         all_docs = list(wordbooks_ref.stream())
-        
         # クライアントサイドでフィルタリング
         filtered_docs = []
-        
+        import re
+        def normalize(text):
+            if not text:
+                return ''
+            # 記号・空白を除去し小文字化
+            return re.sub(r'\W+', '', text).lower()
+
         for doc in all_docs:
             wordbook_data = doc.to_dict()
-            
             # セキュリティチェック: 他人の非公開単語帳は除外
             is_owner = wordbook_data.get('owner_id') == uid
             is_public_wordbook = wordbook_data.get('is_public', False)
-            
-            # 自分の単語帳でない場合は、公開されているもののみ表示
             if not is_owner and not is_public_wordbook:
                 continue
-            
             # is_public フィルター
             if is_public is not None and wordbook_data.get('is_public') != is_public:
                 continue
-            
             # is_owned フィルター
             if is_owned is not None:
                 if is_owned and not is_owner:
                     continue
                 elif not is_owned and is_owner:
                     continue
-            
             # min_words フィルター
             if min_words is not None and wordbook_data.get('num_words', 0) < min_words:
                 continue
-            
-            # テキスト検索
+            # 柔軟なテキスト検索
             if q and q.strip():
-                query_lower = q.lower()
-                searchable_text = f"{wordbook_data.get('name', '')} {wordbook_data.get('description', '')} {wordbook_data.get('user_name', '')}".lower()
-                if query_lower not in searchable_text:
+                query_norm = normalize(q)
+                searchable_text = f"{wordbook_data.get('name', '')} {wordbook_data.get('description', '')} {wordbook_data.get('user_name', '')}"
+                searchable_norm = normalize(searchable_text)
+                if query_norm not in searchable_norm:
                     continue
-            
-            filtered_docs.append(doc)
+            filtered_docs.append(wordbook_data)
         
         total = len(filtered_docs)
         total_pages = math.ceil(total / limit) if total > 0 else 1
@@ -297,8 +287,7 @@ async def search_wordbooks(
         page_docs = filtered_docs[start_index:end_index]
         
         # レスポンス作成
-        wordbooks = [WordBookResponse(**doc.to_dict()) for doc in page_docs]
-        
+        wordbooks = [WordBookResponse(**doc) for doc in page_docs]
         return SearchResponse(
             wordbooks=wordbooks,
             total=total,
