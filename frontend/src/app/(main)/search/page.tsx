@@ -3,73 +3,80 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useSearchParams } from 'next/navigation'
 import { searchWordbooks, SearchResponse } from '@/lib/api/db'
+import type { SearchQuery } from '@/types'
 import WordBookList from '@/components/WordBookList'
 import Loading from '@/components/Loading'
 import { LuFilter, LuSearch } from 'react-icons/lu'
 import { useAuth } from '@/hooks/useAuth'
 
-interface SearchFilters {
-  isPublic: boolean | null
-  isOwned: boolean | null
-  minWords: number | null
-  sortBy: string
-  sortOrder: string
-}
+// SearchQuery型をそのまま使う
 
 export default function SearchPage() {
   const searchParams = useSearchParams()
   const query = searchParams.get('q') || ''
   const { user } = useAuth()
 
-  const [searchResults, setSearchResults] = useState<SearchResponse | null>(null)
+  const [searchResults, setSearchResults] = useState<SearchResponse | null>(
+    null
+  )
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const [showFilters, setShowFilters] = useState(false)
-  
-  const [filters, setFilters] = useState<SearchFilters>({
-    isPublic: null,
-    isOwned: null,
-    minWords: null,
-    sortBy: 'created_at',
-    sortOrder: 'desc'
+
+  const [filters, setFilters] = useState<SearchQuery>({
+    is_public: undefined,
+    is_owned: undefined,
+    min_words: undefined,
+    sort_by: 'created_at',
+    sort_order: 'desc',
+    page: 1,
+    limit: 20,
   })
 
-  const performSearch = useCallback(async (page: number = 1) => {
-    if (!query.trim() || !user) return
+  const performSearch = useCallback(
+    async (page: number = 1) => {
+      if (!query.trim() || !user) return
 
-    setLoading(true)
-    setError(null)
+      setLoading(true)
+      setError(null)
 
-    try {
-      const idToken = await user.getIdToken()
-      
-      const params = new URLSearchParams()
-      if (query) params.append('q', query)
-      if (filters.isPublic !== null) params.append('is_public', filters.isPublic.toString())
-      if (filters.isOwned !== null) params.append('is_owned', filters.isOwned.toString())
-      if (filters.minWords !== null) params.append('min_words', filters.minWords.toString())
-      params.append('sort_by', filters.sortBy)
-      params.append('sort_order', filters.sortOrder)
-      params.append('page', page.toString())
-      params.append('limit', '20')
+      try {
+        const idToken = await user.getIdToken()
 
-      const response = await searchWordbooks(params.toString(), idToken)
-      
-      if ('error' in response) {
-        setError(response.error)
-        setSearchResults(null)
-      } else {
-        setSearchResults(response)
-        setCurrentPage(page)
+        // SearchQuery型のオブジェクトを生成
+        const searchQuery: SearchQuery = {
+          ...filters,
+          q: query,
+          page,
+        }
+
+        // undefinedやnullの値はクエリに含めない
+        const params = new URLSearchParams()
+        Object.entries(searchQuery).forEach(([key, value]) => {
+          if (value !== undefined && value !== null && value !== '') {
+            params.append(key, String(value))
+          }
+        })
+
+        const response = await searchWordbooks(params.toString(), idToken)
+
+        if ('error' in response) {
+          setError(response.error)
+          setSearchResults(null)
+        } else {
+          setSearchResults(response)
+          setCurrentPage(page)
+        }
+      } catch (err) {
+        setError('検索中にエラーが発生しました')
+        console.error('Search error:', err)
+      } finally {
+        setLoading(false)
       }
-    } catch (err) {
-      setError('検索中にエラーが発生しました')
-      console.error('Search error:', err)
-    } finally {
-      setLoading(false)
-    }
-  }, [query, filters, user])
+    },
+    [query, filters, user]
+  )
 
   useEffect(() => {
     if (query) {
@@ -90,8 +97,12 @@ export default function SearchPage() {
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
           <LuSearch className="mx-auto w-16 h-16 text-gray-400 mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">単語帳を検索</h2>
-          <p className="text-gray-600">上部の検索バーから単語帳を検索してください</p>
+          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+            単語帳を検索
+          </h2>
+          <p className="text-gray-600">
+            上部の検索バーから単語帳を検索してください
+          </p>
         </div>
       </div>
     )
@@ -106,7 +117,8 @@ export default function SearchPage() {
         </h1>
         {searchResults && (
           <p className="text-gray-600">
-            {searchResults.total}件中 {((currentPage - 1) * 20) + 1}-{Math.min(currentPage * 20, searchResults.total)}件を表示
+            {searchResults.total}件中 {(currentPage - 1) * 20 + 1}-
+            {Math.min(currentPage * 20, searchResults.total)}件を表示
           </p>
         )}
       </div>
@@ -132,11 +144,18 @@ export default function SearchPage() {
                 公開設定
               </label>
               <select
-                value={filters.isPublic === null ? '' : filters.isPublic.toString()}
+                value={
+                  filters.is_public === undefined
+                    ? ''
+                    : filters.is_public.toString()
+                }
                 onChange={(e) =>
                   setFilters({
                     ...filters,
-                    isPublic: e.target.value === '' ? null : e.target.value === 'true'
+                    is_public:
+                      e.target.value === ''
+                        ? undefined
+                        : e.target.value === 'true',
                   })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -153,11 +172,18 @@ export default function SearchPage() {
                 所有者
               </label>
               <select
-                value={filters.isOwned === null ? '' : filters.isOwned.toString()}
+                value={
+                  filters.is_owned === undefined
+                    ? ''
+                    : filters.is_owned.toString()
+                }
                 onChange={(e) =>
                   setFilters({
                     ...filters,
-                    isOwned: e.target.value === '' ? null : e.target.value === 'true'
+                    is_owned:
+                      e.target.value === ''
+                        ? undefined
+                        : e.target.value === 'true',
                   })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -176,11 +202,13 @@ export default function SearchPage() {
               <input
                 type="number"
                 min="0"
-                value={filters.minWords || ''}
+                value={filters.min_words ?? ''}
                 onChange={(e) =>
                   setFilters({
                     ...filters,
-                    minWords: e.target.value ? parseInt(e.target.value) : null
+                    min_words: e.target.value
+                      ? parseInt(e.target.value)
+                      : undefined,
                   })
                 }
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -194,13 +222,13 @@ export default function SearchPage() {
                 並び順
               </label>
               <select
-                value={`${filters.sortBy}_${filters.sortOrder}`}
+                value={`${filters.sort_by}_${filters.sort_order}`}
                 onChange={(e) => {
-                  const [sortBy, sortOrder] = e.target.value.split('_')
+                  const [sort_by, sort_order] = e.target.value.split('_')
                   setFilters({
                     ...filters,
-                    sortBy,
-                    sortOrder
+                    sort_by,
+                    sort_order,
                   })
                 }}
                 className="w-full px-3 py-2 border border-gray-300 rounded-md"
@@ -238,13 +266,15 @@ export default function SearchPage() {
           {searchResults.wordbooks.length === 0 ? (
             <div className="text-center py-8">
               <LuSearch className="mx-auto w-16 h-16 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">検索結果が見つかりません</h3>
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                検索結果が見つかりません
+              </h3>
               <p className="text-gray-600">検索条件を変更してお試しください</p>
             </div>
           ) : (
             <>
               <WordBookList wordbooks={searchResults.wordbooks} />
-              
+
               {/* ページネーション */}
               {searchResults.total_pages > 1 && (
                 <div className="mt-8 flex justify-center">
