@@ -1,4 +1,8 @@
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { useDeckStore } from '@/stores/deckStore'
+import { useAuth } from '@/hooks/useAuth'
+import { duplicateWordbook } from '@/lib/api/db'
 import { LuUser, LuCalendar, LuBookOpen, LuGlobe, LuLock } from 'react-icons/lu'
 import { Deck } from '@/types'
 import DropdownMenu from '../DropdownMenu'
@@ -40,7 +44,35 @@ export default function WordbookCard({
     onDelete(wordbook)
   }
 
-  // カスタムフックを使用してメニューアイテムを取得
+  // 3点リーダーメニュー「カード学習」用
+  const decks = useDeckStore((state) => state.decks)
+  const handleViewCards = async () => {
+    if (!user) {
+      alert('ログインが必要です')
+      return
+    }
+    // 既に同じIDの単語帳が存在する場合は複製せず選択のみ
+    const exists = decks.some((deck) => deck.id === wordbook.id)
+    if (exists) {
+      selectDeck(wordbook.id)
+      return
+    }
+    const duplicateData = {
+      name: wordbook.name,
+      description: wordbook.description,
+      is_public: false,
+      num_words: wordbook.num_words,
+      user_name: user.displayName || user.email || 'Unknown',
+    }
+    const idToken = await user.getIdToken()
+    const result = await duplicateWordbook(wordbook.id, duplicateData, idToken)
+    if (result && result.id) {
+      selectDeck(result.id)
+    } else {
+      alert('単語帳の複製に失敗しました')
+    }
+  }
+
   const permission: PermissionLevel = activeTab === 'my' ? 'owner' : 'public'
   const menuItems = useWordbookMenuItems({
     deckId: wordbook.id,
@@ -48,6 +80,7 @@ export default function WordbookCard({
     onEdit: handleEdit,
     onDuplicate: handleDuplicate,
     onDelete: handleDelete,
+    onViewCards: handleViewCards,
   })
 
   const formatDate = (dateString: string) => {
@@ -56,6 +89,41 @@ export default function WordbookCard({
       month: 'short',
       day: 'numeric',
     })
+  }
+
+  const router = useRouter()
+  const { user } = useAuth()
+
+  // 学習ボタン押下時の処理
+  const selectDeck = useDeckStore((state) => state.selectDeck)
+  const handleStartLearning = async () => {
+    if (!user) {
+      alert('ログインが必要です')
+      return
+    }
+    // 既に同じIDの単語帳が存在する場合は複製せず選択のみ
+    const exists = decks.some((deck) => deck.id === wordbook.id)
+    if (exists) {
+      selectDeck(wordbook.id)
+      return
+    }
+    // 複製用データを作成
+    const duplicateData = {
+      name: wordbook.name,
+      description: wordbook.description,
+      is_public: false, // 複製は非公開で作成
+      num_words: wordbook.num_words,
+      user_name: user.displayName || user.email || 'Unknown',
+    }
+    // APIで複製
+    const idToken = await user.getIdToken()
+    const result = await duplicateWordbook(wordbook.id, duplicateData, idToken)
+    if (result && result.id) {
+      selectDeck(result.id) // zustandで選択
+      router.push('/') // トップページに遷移
+    } else {
+      alert('単語帳の複製に失敗しました')
+    }
   }
 
   return (
@@ -105,14 +173,14 @@ export default function WordbookCard({
           </div>
         </div>
 
-        {/* 学習ボタン - 常に下部に固定 */}
+        {/* 学習ボタン - 複製してcardViewerに遷移 */}
         <div className="pt-4 border-t border-gray-100 mt-auto">
-          <Link
-            href={`/word-list/${wordbook.id}`}
-            className="block text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
+          <button
+            onClick={handleStartLearning}
+            className="w-full text-center bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg transition-colors"
           >
             学習する
-          </Link>
+          </button>
         </div>
       </div>
     </div>

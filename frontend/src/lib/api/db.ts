@@ -345,6 +345,10 @@ export async function deleteWordbook(wordbookId: string, idToken: string) {
       headers,
     })
 
+    if (response.status === 204) {
+      return { success: true }
+    }
+
     let responseBody
     try {
       responseBody = await response.clone().json()
