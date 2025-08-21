@@ -113,7 +113,7 @@ export default function WordItem({
       {/* --- アコーディオンヘッダー --- */}
       <div className="relative p-5 sm:px-6 sm:py-6">
         {/* 右上のボタンエリア */}
-        <div className="absolute top-3 right-3">
+        <div className="absolute flex top-3 right-3">
           {/* ブックマークボタン */}
           {user && (
             <button
