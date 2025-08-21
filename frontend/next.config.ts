@@ -1,14 +1,9 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
-  // 本番用: allowedOriginsは本番ドメインのみ
   experimental: {
     serverActions: {
-      allowedOrigins: [
-        'https://word-wise.jp',
-        'http://localhost:3000',
-        'https://localhost:3000',
-      ],
+      allowedOrigins: ['https://word-wise.jp', 'http://localhost:3000'],
     },
   },
   images: {
