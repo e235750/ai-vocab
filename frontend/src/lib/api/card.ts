@@ -6,7 +6,7 @@ export async function createCard(word: string) {
 
   try {
     const response = await fetch(
-      `${process.env.NEXT_PUBLIC_API_URL}/words/${word}`,
+      `${process.env.NEXT_PUBLIC_API_URL}/words/${word}/`,
       {
         method: 'GET',
         headers: {

@@ -5,7 +5,13 @@ import { useRouter } from 'next/navigation'
 import { useDeckStore } from '@/stores/deckStore'
 import { useAuth } from '@/hooks/useAuth'
 import { useDeckMenuItems } from '@/hooks/useMenuItems'
-import { addCard, updateCard, deleteCard, deleteWordbook } from '@/lib/api/db'
+import {
+  addCard,
+  updateCard,
+  deleteCard,
+  deleteWordbook,
+  duplicateWordbook,
+} from '@/lib/api/db'
 import WordList from '@/components/WordList'
 import Loading from '@/components/Loading'
 import AddCardForm from '@/components/cardForm/AddCardForm'
@@ -126,6 +132,39 @@ export default function Page() {
   // 権限レベルを判定
   const isOwner =
     currentDeck && user && currentDeck.user_name === user.displayName
+  const selectDeck = useDeckStore((state) => state.selectDeck)
+
+  // カード学習ボタン用ハンドラ
+  const handleStartLearning = async () => {
+    if (!user || !currentDeck) {
+      alert('ログインが必要です')
+      return
+    }
+    // 既に同じIDの単語帳が存在する場合は複製せず選択のみ
+    const exists = decks.some((deck) => deck.id === currentDeck.id)
+    if (exists) {
+      selectDeck(currentDeck.id)
+      return
+    }
+    const duplicateData = {
+      name: currentDeck.name,
+      description: currentDeck.description,
+      is_public: false,
+      num_words: currentDeck.num_words,
+      user_name: user.displayName || user.email || 'Unknown',
+    }
+    const idToken = await user.getIdToken()
+    const result = await duplicateWordbook(
+      currentDeck.id,
+      duplicateData,
+      idToken
+    )
+    if (result && result.id) {
+      selectDeck(result.id)
+    } else {
+      alert('単語帳の複製に失敗しました')
+    }
+  }
   const permission: PermissionLevel = isOwner
     ? 'owner'
     : currentDeck?.is_public
@@ -139,6 +178,7 @@ export default function Page() {
     onEdit: handleEdit,
     onDuplicate: handleDuplicate,
     onDelete: handleDelete,
+    onViewCards: handleStartLearning,
   })
 
   const handleEditClose = () => {

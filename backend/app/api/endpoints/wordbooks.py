@@ -213,7 +213,7 @@ async def update_wordbook(
     updated_doc = wordbook_ref.get()
     return WordBookResponse(**updated_doc.to_dict())
 
-@router.get("/search",
+@router.get("/search/",
             
     response_model=SearchResponse,
     summary="単語帳を検索",
@@ -301,7 +301,7 @@ async def search_wordbooks(
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Search failed: {str(e)}")
 
-@router.delete("/{wordbook_id}",
+@router.delete("/{wordbook_id}/",
     status_code=status.HTTP_204_NO_CONTENT,
     summary="単語帳を削除",
     description="指定された単語帳IDに紐づく単語帳を削除する"

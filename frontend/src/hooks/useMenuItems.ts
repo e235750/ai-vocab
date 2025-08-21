@@ -38,7 +38,7 @@ export function useMenuItems(config: UseMenuItemsConfig = {}) {
       },
       {
         ...MENU_ITEMS.viewCards,
-        href: `/wordbooks/${deckId}/cards`,
+        href: '/',
         onClick: onViewCards,
       },
       MENU_ITEMS.divider,
@@ -70,7 +70,8 @@ export function useMenuItems(config: UseMenuItemsConfig = {}) {
       },
       {
         ...MENU_ITEMS.viewCards,
-        href: `/wordbooks/${deckId}/cards`,
+        href: `/`,
+        onClick: onViewCards,
       },
       ...(permission === 'owner'
         ? [
@@ -144,7 +145,12 @@ export function useWordbookMenuItems(
 export function useDeckMenuItems(
   config: Pick<
     UseMenuItemsConfig,
-    'deckId' | 'permission' | 'onEdit' | 'onDuplicate' | 'onDelete'
+    | 'deckId'
+    | 'permission'
+    | 'onEdit'
+    | 'onDuplicate'
+    | 'onDelete'
+    | 'onViewCards'
   >
 ) {
   const { deckMenuItems } = useMenuItems(config)

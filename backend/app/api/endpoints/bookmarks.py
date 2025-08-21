@@ -10,7 +10,7 @@ import uuid
 router = APIRouter()
 
 
-@router.post("", response_model=BookmarkResponse)
+@router.post("/", response_model=BookmarkResponse)
 async def create_bookmark(
     bookmark_data: BookmarkCreate,
     uid: str = Depends(get_current_user_uid),
@@ -56,7 +56,7 @@ async def create_bookmark(
         )
 
 
-@router.get("", response_model=List[BookmarkResponse])
+@router.get("/", response_model=List[BookmarkResponse])
 async def get_bookmarks(
     uid: str = Depends(get_current_user_uid),
     db: firestore.Client = Depends(get_db)
@@ -83,7 +83,7 @@ async def get_bookmarks(
         )
 
 
-@router.delete("/{bookmark_id}")
+@router.delete("/{bookmark_id}/")
 async def delete_bookmark(
     bookmark_id: str,
     uid: str = Depends(get_current_user_uid),
@@ -121,7 +121,7 @@ async def delete_bookmark(
         )
 
 
-@router.delete("/card/{card_id}")
+@router.delete("/card/{card_id}/")
 async def delete_bookmark_by_card_id(
     card_id: str,
     uid: str = Depends(get_current_user_uid),
@@ -158,7 +158,7 @@ async def delete_bookmark_by_card_id(
         )
 
 
-@router.get("/check/{card_id}", response_model=BookmarkExistsResponse)
+@router.get("/check/{card_id}/", response_model=BookmarkExistsResponse)
 async def check_bookmark_exists(
     card_id: str,
     uid: str = Depends(get_current_user_uid),

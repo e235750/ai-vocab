@@ -6,7 +6,7 @@ const API_BASE_URL =
 
 // ブックマーク一覧を取得
 export const getBookmarks = async (token: string): Promise<Bookmark[]> => {
-  const response = await fetch(`${API_BASE_URL}/bookmarks`, {
+  const response = await fetch(`${API_BASE_URL}/bookmarks/`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -26,7 +26,7 @@ export const createBookmark = async (
   data: NewBookmark,
   token: string
 ): Promise<Bookmark> => {
-  const response = await fetch(`${API_BASE_URL}/bookmarks`, {
+  const response = await fetch(`${API_BASE_URL}/bookmarks/`, {
     method: 'POST',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -47,7 +47,7 @@ export const deleteBookmark = async (
   bookmarkId: string,
   token: string
 ): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/bookmarks/${bookmarkId}`, {
+  const response = await fetch(`${API_BASE_URL}/bookmarks/${bookmarkId}/`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -65,7 +65,7 @@ export const deleteBookmarkByCardId = async (
   cardId: string,
   token: string
 ): Promise<void> => {
-  const response = await fetch(`${API_BASE_URL}/bookmarks/card/${cardId}`, {
+  const response = await fetch(`${API_BASE_URL}/bookmarks/card/${cardId}/`, {
     method: 'DELETE',
     headers: {
       Authorization: `Bearer ${token}`,
@@ -83,7 +83,7 @@ export const checkBookmarkExists = async (
   cardId: string,
   token: string
 ): Promise<boolean> => {
-  const response = await fetch(`${API_BASE_URL}/bookmarks/check/${cardId}`, {
+  const response = await fetch(`${API_BASE_URL}/bookmarks/check/${cardId}/`, {
     method: 'GET',
     headers: {
       Authorization: `Bearer ${token}`,
