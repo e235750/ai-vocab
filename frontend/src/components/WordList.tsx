@@ -15,7 +15,7 @@ export default function WordList({
   onDelete,
 }: WordListProps) {
   return (
-    <div className="w-full max-w-3xl bg-white rounded-xl shadow-md overflow-visible">
+    <div className="w-full max-w-3xl bg-white dark:bg-gray-800 rounded-xl shadow-md dark:shadow-lg overflow-visible">
       {words.map((word) => (
         <WordItem
           key={word.id}
