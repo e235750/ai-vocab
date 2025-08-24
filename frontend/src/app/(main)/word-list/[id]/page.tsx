@@ -234,7 +234,7 @@ export default function Page() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <Loading />
       </div>
     )
@@ -242,29 +242,29 @@ export default function Page() {
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-red-600 mb-2">エラー</h2>
-          <p className="text-gray-600">{error}</p>
+          <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-2">エラー</h2>
+          <p className="text-gray-600 dark:text-gray-400">{error}</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8">
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* ヘッダー */}
         <div className="mb-8">
           <div className="flex justify-between items-start">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">
+              <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100 mb-2">
                 {deckName || '単語帳'}
               </h1>
-              <div className="flex items-center gap-2 text-gray-600">
+              <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                 <p>{words.length}個の単語が登録されています</p>
                 {permission !== 'owner' && currentDeck?.user_name && (
-                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 text-blue-800">
+                  <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300">
                     作成者: {currentDeck.user_name}
                   </span>
                 )}
@@ -280,7 +280,7 @@ export default function Page() {
               {permission === 'owner' && (
                 <button
                   onClick={() => setIsAddingCard(!isAddingCard)}
-                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
+                  className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 text-white dark:text-gray-900 font-medium px-4 py-2 rounded-lg transition-colors shadow-sm"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -326,7 +326,7 @@ export default function Page() {
           <div className="text-center py-16">
             <div className="mx-auto max-w-md">
               <svg
-                className="mx-auto h-16 w-16 text-gray-400 mb-4"
+                className="mx-auto h-16 w-16 text-gray-400 dark:text-gray-600 mb-4"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
@@ -338,10 +338,10 @@ export default function Page() {
                   d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.746 0 3.332.477 4.5 1.253v13C19.832 18.477 18.246 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
                 />
               </svg>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                 単語がありません
               </h3>
-              <p className="text-gray-500 mb-4">
+              <p className="text-gray-500 dark:text-gray-400 mb-4">
                 {permission === 'owner'
                   ? 'この単語帳にはまだ単語が登録されていません。'
                   : 'この単語帳には単語が登録されていません。'}
@@ -349,7 +349,7 @@ export default function Page() {
               {permission === 'owner' && (
                 <button
                   onClick={() => setIsAddingCard(true)}
-                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg transition-colors"
+                  className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 text-white dark:text-gray-900 font-medium px-4 py-2 rounded-lg transition-colors"
                 >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
