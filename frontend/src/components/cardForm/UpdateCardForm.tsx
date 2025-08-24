@@ -33,10 +33,10 @@ export default function UpdateCardForm({
   return (
     <div className="mt-8 mb-12">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-xl font-bold text-gray-800">カードを編集</h2>
+        <h2 className="text-xl font-bold text-gray-800 dark:text-gray-100">カードを編集</h2>
         <button
           onClick={onCancel}
-          className="p-2 text-gray-500 hover:text-gray-800 rounded-lg hover:bg-gray-100"
+          className="p-2 text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-100 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800"
         >
           <FaTimes className="w-5 h-5" />
         </button>
@@ -47,7 +47,7 @@ export default function UpdateCardForm({
         onSubmit={handleSubmit}
         onCancel={onCancel}
         submitButtonText="変更を保存"
-        className="p-6 bg-white border-2 border-blue-500 rounded-xl flex flex-col gap-6 shadow-lg"
+        className="p-6 bg-white dark:bg-[#23272f] border-2 border-blue-500 dark:border-blue-700 rounded-xl flex flex-col gap-6 shadow-lg"
       />
     </div>
   )

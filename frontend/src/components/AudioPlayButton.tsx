@@ -61,7 +61,17 @@ export default function AudioPlayButton({
   return (
     <button
       type="button"
-      className={`bg-blue-500 hover:bg-blue-600 disabled:bg-gray-400 disabled:cursor-not-allowed text-white rounded-full w-12 h-12 flex items-center justify-center transition-colors shadow-md hover:shadow-lg focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-2 ${className}`}
+      className={`
+        bg-blue-500 hover:bg-blue-600
+        dark:bg-blue-400 dark:hover:bg-blue-300
+        disabled:bg-gray-400 dark:disabled:bg-gray-600
+        disabled:cursor-not-allowed
+        text-white dark:text-gray-900
+        rounded-full w-12 h-12 flex items-center justify-center
+        transition-colors shadow-md hover:shadow-lg
+        focus:outline-none focus:ring-2 focus:ring-blue-400 dark:focus:ring-blue-200 focus:ring-offset-2
+        ${className}
+      `}
       aria-label={isPlaying ? '音声再生中...' : '音声を聞く'}
       onClick={handleAudioPlay}
       onMouseDown={(e) => e.stopPropagation()}

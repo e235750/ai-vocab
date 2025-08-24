@@ -24,18 +24,18 @@ export default function ProfilePage() {
   // ローディング・未ログイン時の分岐はHooksの後
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        Loading...
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <span className="text-gray-700 dark:text-gray-200">Loading...</span>
       </div>
     )
   }
 
   if (!user) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <h2 className="text-xl font-semibold mb-2">ログインが必要です</h2>
-          <p className="text-gray-600">
+          <h2 className="text-xl font-semibold mb-2 dark:text-gray-100">ログインが必要です</h2>
+          <p className="text-gray-600 dark:text-gray-400">
             プロフィール情報を表示するにはログインしてください。
           </p>
         </div>
@@ -67,9 +67,9 @@ export default function ProfilePage() {
   const pagedDecks = myDecks.slice((page - 1) * pageSize, page * pageSize)
 
   return (
-    <div className="max-w-2xl mx-auto mt-10 p-8 bg-white rounded-xl shadow-lg">
-      <h1 className="text-3xl font-bold mb-8 text-blue-700">プロフィール</h1>
-      <div className="flex flex-row items-center mb-8 gap-8 border-1 border-gray-300 rounded-lg p-6">
+    <div className="max-w-2xl mx-auto mt-10 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-xl">
+      <h1 className="text-3xl font-bold mb-8 text-blue-700 dark:text-blue-300">プロフィール</h1>
+      <div className="flex flex-row items-center mb-8 gap-8 border-1 border-gray-300 dark:border-gray-700 rounded-lg p-6 bg-gray-50 dark:bg-gray-900">
         {/* ユーザーアイコン */}
         <div className="flex-shrink-0 flex justify-center items-center">
           {user.photoURL ? (
@@ -82,7 +82,7 @@ export default function ProfilePage() {
             />
           ) : (
             <svg
-              className="w-32 h-32 text-blue-400"
+              className="w-32 h-32 text-blue-400 dark:text-blue-600"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -99,26 +99,26 @@ export default function ProfilePage() {
         {/* ユーザー情報 */}
         <div className="flex-1 grid grid-cols-1 gap-4">
           <div>
-            <div className="font-semibold text-gray-700">ユーザー名</div>
-            <div className="text-2xl flex items-center gap-2">
+            <div className="font-semibold text-gray-700 dark:text-gray-200">ユーザー名</div>
+            <div className="text-2xl flex items-center gap-2 text-gray-900 dark:text-gray-100">
               {user.displayName || user.email || 'No Name'}
             </div>
           </div>
           <div>
-            <div className="font-semibold text-gray-700">メールアドレス</div>
-            <div className="text-lg">{user.email || '未登録'}</div>
+            <div className="font-semibold text-gray-700 dark:text-gray-200">メールアドレス</div>
+            <div className="text-lg text-gray-900 dark:text-gray-100">{user.email || '未登録'}</div>
           </div>
           <div>
-            <div className="font-semibold text-gray-700">アカウント作成日</div>
-            <div className="text-lg">{createdAt}</div>
+            <div className="font-semibold text-gray-700 dark:text-gray-200">アカウント作成日</div>
+            <div className="text-lg text-gray-900 dark:text-gray-100">{createdAt}</div>
           </div>
         </div>
       </div>
 
       <div className="mt-8">
-        <h2 className="text-xl font-bold mb-3 text-blue-600 flex items-center gap-2">
+        <h2 className="text-xl font-bold mb-3 text-blue-600 dark:text-blue-300 flex items-center gap-2">
           <svg
-            className="w-5 h-5 text-blue-400"
+            className="w-5 h-5 text-blue-400 dark:text-blue-300"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -139,24 +139,24 @@ export default function ProfilePage() {
           作成した単語帳（{myDecks.length}）
         </h2>
         {myDecks.length === 0 ? (
-          <div className="text-gray-500">まだ単語帳を作成していません。</div>
+          <div className="text-gray-500 dark:text-gray-400">まだ単語帳を作成していません。</div>
         ) : (
           <>
-            <ul className="divide-y divide-gray-200 bg-gray-50 rounded-lg shadow-sm">
+            <ul className="divide-y divide-gray-200 dark:divide-gray-700 bg-gray-50 dark:bg-gray-900 rounded-lg shadow-sm dark:shadow-md">
               {pagedDecks.map((deck) => (
                 <li
                   key={deck.id}
-                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-blue-50 transition-colors cursor-pointer"
+                  className="p-4 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer"
                 >
                   <Link
                     href={`/word-list/${deck.id}`}
                     className="flex-1 flex flex-col sm:flex-row sm:items-center justify-between gap-2"
                   >
                     <div>
-                      <div className="font-semibold text-gray-800">
+                      <div className="font-semibold text-gray-800 dark:text-gray-100">
                         {deck.name}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         作成日:{' '}
                         {new Date(deck.created_at).toLocaleDateString('ja-JP', {
                           year: 'numeric',
@@ -165,7 +165,7 @@ export default function ProfilePage() {
                         })}
                       </div>
                     </div>
-                    <div className="mt-2 sm:mt-0 text-sm text-gray-600">
+                    <div className="mt-2 sm:mt-0 text-sm text-gray-600 dark:text-gray-300">
                       {deck.num_words}語
                     </div>
                   </Link>
@@ -176,17 +176,17 @@ export default function ProfilePage() {
             {totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-4">
                 <button
-                  className="px-3 py-1 rounded border bg-white text-blue-600 disabled:opacity-50"
+                  className="px-3 py-1 rounded border bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-300 disabled:opacity-50"
                   onClick={() => setPage(page - 1)}
                   disabled={page === 1}
                 >
                   前へ
                 </button>
-                <span className="text-sm text-gray-700">
+                <span className="text-sm text-gray-700 dark:text-gray-200">
                   {page} / {totalPages}
                 </span>
                 <button
-                  className="px-3 py-1 rounded border bg-white text-blue-600 disabled:opacity-50"
+                  className="px-3 py-1 rounded border bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-300 disabled:opacity-50"
                   onClick={() => setPage(page + 1)}
                   disabled={page === totalPages}
                 >

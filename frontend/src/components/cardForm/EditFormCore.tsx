@@ -160,7 +160,13 @@ export default function EditFormCore({
   }
 
   return (
-    <form onSubmit={handleSubmit} className={className}>
+    <form
+      onSubmit={handleSubmit}
+      className={
+        className +
+        ' bg-white dark:bg-[#23272f] border border-gray-200 dark:border-gray-700 rounded-xl p-4 shadow-md'
+      }
+    >
       <datalist id="part-of-speech-list">
         {partOfSpeechOptions.map((pos) => (
           <option key={pos} value={pos} />
@@ -169,18 +175,20 @@ export default function EditFormCore({
 
       {/* 英単語入力 */}
       <div>
-        <label className="font-semibold text-gray-700 block mb-2">英単語</label>
+        <label className="font-semibold text-gray-700 dark:text-gray-200 block mb-2">
+          英単語
+        </label>
         <input
           type="text"
           value={english}
           onChange={(e) => setEnglish(e.target.value)}
           placeholder="example"
-          className="text-xl text-gray-800 w-full border border-gray-300 rounded-lg p-3 focus:outline-none focus:border-blue-500"
+          className="text-xl text-gray-800 dark:text-gray-100 w-full border border-gray-300 dark:border-gray-700 rounded-lg p-3 focus:outline-none focus:border-blue-500 dark:bg-[#23272f]"
           required
         />
       </div>
 
-      <hr className="border-t border-gray-200" />
+      <hr className="border-t border-gray-200 dark:border-gray-700" />
 
       {/* 定義セクション */}
       <DefinitionEditor
@@ -194,7 +202,7 @@ export default function EditFormCore({
         onRemoveMeaning={handleRemoveMeaning}
       />
 
-      <hr className="border-t border-gray-200" />
+      <hr className="border-t border-gray-200 dark:border-gray-700" />
 
       {/* 例文セクション */}
       <ExampleSentenceEditor
@@ -207,7 +215,7 @@ export default function EditFormCore({
         onJapaneseChange={setNewExampleJapanese}
       />
 
-      <hr className="border-t border-gray-200" />
+      <hr className="border-t border-gray-200 dark:border-gray-700" />
 
       {/* 類義語セクション */}
       <SynonymEditor
@@ -218,20 +226,20 @@ export default function EditFormCore({
         onNewSynonymChange={setNewSynonym}
       />
 
-      <hr className="border-t border-gray-200" />
+      <hr className="border-t border-gray-200 dark:border-gray-700" />
 
       {/* ボタン */}
       <div className="flex justify-end gap-3 mt-4">
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300 transition-colors"
+          className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
         >
           キャンセル
         </button>
         <button
           type="submit"
-          className="px-6 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 font-bold transition-colors"
+          className="px-6 py-2 text-white bg-blue-500 rounded-lg hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800 font-bold transition-colors"
         >
           {submitButtonText}
         </button>

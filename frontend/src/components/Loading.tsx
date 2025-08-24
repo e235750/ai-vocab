@@ -21,7 +21,7 @@ export default function Loading({
     >
       <svg
         className={twMerge(
-          'h-20 w-20 animate-spin stroke-gray-500',
+          'h-20 w-20 animate-spin stroke-gray-500 dark:stroke-gray-400',
           svgClassName
         )}
         viewBox="0 0 256 256"
@@ -103,7 +103,7 @@ export default function Loading({
       {message && (
         <span
           className={twMerge(
-            'text-4xl font-medium text-gray-500',
+            'text-4xl font-medium text-gray-500 dark:text-gray-300',
             textClassName
           )}
         >
