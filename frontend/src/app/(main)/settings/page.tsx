@@ -1,6 +1,7 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
+import { useRouter } from 'next/navigation'
 import {
   FaUserEdit,
   FaSignOutAlt,
@@ -10,6 +11,7 @@ import {
   FaRegEye,
   FaRegMoon,
 } from 'react-icons/fa'
+import { logout, deleteUser } from '@/lib/firebase/auth'
 
 // TODO: ユーザー名変更やアカウント設定をDBに保存する場合は、userスキーマやAPIエンドポイントの追加が必要です。
 
@@ -19,28 +21,57 @@ export default function SettingPage() {
   const [displayName, setDisplayName] = useState(user?.displayName || '')
   const [isCardAnimation, setIsCardAnimation] = useState(true)
   const [isSimpleCard, setIsSimpleCard] = useState(false)
-  const [isDarkMode, setIsDarkMode] = useState(false)
-  // ...existing code...
-  const [isLogout, setIsLogout] = useState(false)
-  const [isDeleteAccount, setIsDeleteAccount] = useState(false)
+  // ダークモード状態をlocalStorageとhtmlクラスから初期化
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme')
+      console.log('saved theme:', saved)
+      if (saved) return saved === 'dark'
+      return document.documentElement.classList.contains('dark')
+    }
+    return false
+  })
 
-  // トグルON時のみ実行し、すぐOFFに戻す
-  // ...existing code...
-  const handleLogoutToggle = (checked: boolean) => {
-    if (checked) {
-      alert('ログアウトは未実装です。useAuthにlogout追加推奨。')
-      setIsLogout(false)
+  // ダークモード切り替え時にhtmlクラスとlocalStorageを同期
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (isDarkMode) {
+      document.documentElement.classList.add('dark')
+      localStorage.setItem('theme', 'dark')
     } else {
-      setIsLogout(false)
+      document.documentElement.classList.remove('dark')
+      localStorage.setItem('theme', 'light')
     }
+  }, [isDarkMode])
+  const router = useRouter()
+
+  const handleLogout = () => {
+    if (!window.confirm('ログアウトしますか？')) return
+    logout()
+      .then(() => {
+        router.push('/sign-in')
+      })
+      .catch((error) => {
+        console.error('Logout failed:', error)
+        alert('ログアウトに失敗しました')
+      })
   }
-  const handleDeleteAccountToggle = (checked: boolean) => {
-    if (checked) {
-      alert('アカウント削除は未実装です。DB/API設計が必要です。')
-      setIsDeleteAccount(false)
-    } else {
-      setIsDeleteAccount(false)
-    }
+  const handleDeleteAccount = () => {
+    if (
+      !window.confirm(
+        'アカウントを削除すると、すべてのデータが完全に消去され、元に戻すことはできません。本当に削除しますか？'
+      )
+    )
+      return
+
+    deleteUser()
+      .then(() => {
+        router.push('/sign-up')
+      })
+      .catch((error) => {
+        console.error('Delete account failed:', error)
+        alert('アカウント削除に失敗しました')
+      })
   }
 
   return (
@@ -189,9 +220,7 @@ export default function SettingPage() {
           </span>
           <button
             className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors shadow"
-            onClick={() =>
-              alert('ログアウトは未実装です。useAuthにlogout追加推奨。')
-            }
+            onClick={handleLogout}
           >
             ログアウト
           </button>
@@ -203,9 +232,7 @@ export default function SettingPage() {
           </span>
           <button
             className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors shadow"
-            onClick={() =>
-              alert('アカウント削除は未実装です。DB/API設計が必要です。')
-            }
+            onClick={handleDeleteAccount}
           >
             削除
           </button>
