@@ -132,8 +132,8 @@ export default function CardViewer({
   }
 
   return (
-    <section className="flex flex-col items-center p-6 bg-white border border-gray-300 rounded-xl">
-      <h2 className="mb-4 text-base font-semibold text-gray-600">{deckName}</h2>
+  <section className="flex flex-col items-center p-6 bg-white dark:bg-[#23272f] border border-gray-300 dark:border-gray-700 rounded-xl">
+  <h2 className="mb-4 text-base font-semibold text-gray-600 dark:text-gray-300">{deckName}</h2>
 
       {/* フリップカード */}
       <div
@@ -146,7 +146,7 @@ export default function CardViewer({
           }`}
         >
           {/* 表面（英単語） */}
-          <div className="absolute inset-0 w-full h-full bg-white border border-gray-200 rounded-lg shadow-lg backface-hidden flex items-center justify-center">
+          <div className="absolute inset-0 w-full h-full bg-white dark:bg-[#23272f] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg backface-hidden flex items-center justify-center">
             {/* ブックマークボタン */}
             {currentCard && user && (
               <button
@@ -171,12 +171,12 @@ export default function CardViewer({
             )}
 
             <div className="text-center px-8">
-              <p className="text-4xl font-bold text-gray-800 mb-4 font-mono tracking-wide">
+              <p className="text-4xl font-bold text-gray-800 dark:text-gray-100 mb-4 font-mono tracking-wide">
                 {currentCard?.english || 'カードがありません'}
               </p>
               {currentCard?.phonetics && (
                 <div className="flex flex-col items-center gap-3">
-                  <p className="text-lg text-gray-600 font-mono">
+                  <p className="text-lg text-gray-600 dark:text-gray-300 font-mono">
                     {currentCard.phonetics.text}
                   </p>
                   {currentCard.phonetics.audio && (
@@ -189,7 +189,7 @@ export default function CardViewer({
 
           {/* 裏面（詳細情報） */}
           <div
-            className="absolute inset-0 w-full h-full bg-white border border-gray-200 rounded-lg shadow-lg backface-hidden rotate-x-180 overflow-y-auto"
+            className="absolute inset-0 w-full h-full bg-white dark:bg-[#23272f] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg backface-hidden rotate-x-180 overflow-y-auto"
             tabIndex={0}
             aria-label="カードの詳細情報"
           >
@@ -223,19 +223,19 @@ export default function CardViewer({
                   {currentCard.definitions &&
                     currentCard.definitions.length > 0 && (
                       <div>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2">
+                        <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
                           定義
                         </h3>
                         {currentCard.definitions.map((def, index) => (
                           <div key={index} className="mb-4">
-                            <p className="font-semibold text-gray-700 mb-2">
+                            <p className="font-semibold text-gray-700 dark:text-gray-200 mb-2">
                               {def.part_of_speech}
                             </p>
                             <ul className="flex flex-wrap gap-2 list-none p-0 m-0">
                               {def.japanese.map((jp, i) => (
                                 <li
                                   key={i}
-                                  className="bg-gray-100 text-gray-800 px-3 py-1 rounded-full text-sm"
+                                  className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-full text-sm"
                                 >
                                   {jp}
                                 </li>
@@ -249,14 +249,14 @@ export default function CardViewer({
                   {/* 類義語 */}
                   {currentCard.synonyms && currentCard.synonyms.length > 0 && (
                     <div>
-                      <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2 mt-6">
+                      <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2 mt-6">
                         類義語
                       </h3>
                       <div className="flex flex-wrap gap-2">
                         {currentCard.synonyms.map((synonym, index) => (
                           <span
                             key={index}
-                            className="bg-teal-100 text-teal-800 px-3 py-1 rounded-full text-sm font-medium"
+                            className="bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200 px-3 py-1 rounded-full text-sm font-medium"
                           >
                             {synonym}
                           </span>
@@ -269,17 +269,17 @@ export default function CardViewer({
                   {currentCard.example_sentences &&
                     currentCard.example_sentences.length > 0 && (
                       <div>
-                        <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-3 border-b pb-2 mt-6">
+                        <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2 mt-6">
                           例文
                         </h3>
                         <div className="space-y-4">
                           {currentCard.example_sentences.map(
                             (sentence, index) => (
                               <div key={index} className="mb-2">
-                                <p className="text-gray-800 font-mono">
+                                <p className="text-gray-800 dark:text-gray-100 font-mono">
                                   {sentence.english}
                                 </p>
-                                <p className="text-gray-600 text-sm">
+                                <p className="text-gray-600 dark:text-gray-300 text-sm">
                                   {sentence.japanese}
                                 </p>
                               </div>
@@ -292,13 +292,13 @@ export default function CardViewer({
               </div>
             ) : (
               <div className="flex items-center justify-center h-full">
-                <p className="text-gray-500">カードがありません</p>
+                <p className="text-gray-500 dark:text-gray-400">カードがありません</p>
               </div>
             )}
           </div>
         </div>
       </div>
-      <div className="flex items-center w-full gap-4 mb-6">
+  <div className="flex items-center w-full gap-4 mb-6">
         <div className="flex items-center flex-grow gap-4">
           <input
             type="range"
@@ -306,15 +306,15 @@ export default function CardViewer({
             max={totalCards > 0 ? totalCards - 1 : 0}
             value={currentIndex}
             onChange={handleSliderChange}
-            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+            className="w-full h-2 bg-gray-200 dark:bg-gray-700 rounded-lg appearance-none cursor-pointer slider"
           />
-          <span className="text-sm font-medium text-gray-600 min-w-max">
+          <span className="text-sm font-medium text-gray-600 dark:text-gray-300 min-w-max">
             {totalCards > 0 ? currentIndex + 1 : 0} / {totalCards}
           </span>
         </div>
         <div className="flex gap-2">
           <button
-            className="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handlePrev}
             aria-label="Previous card"
             disabled={currentIndex === 0}
@@ -322,7 +322,7 @@ export default function CardViewer({
             <FaArrowLeft className="text-lg" />
           </button>
           <button
-            className="w-10 h-10 flex items-center justify-center text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-10 h-10 flex items-center justify-center text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
             onClick={handleNext}
             aria-label="Next card"
             disabled={currentIndex >= totalCards - 1}
@@ -331,13 +331,13 @@ export default function CardViewer({
           </button>
         </div>
       </div>
-      <div className="flex flex-wrap gap-3 justify-center">
+  <div className="flex flex-wrap gap-3 justify-center">
         {cards.length > 0 && (
           <button
             className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md ${
               isUpdatingCard
                 ? 'bg-indigo-500 text-white border border-indigo-500'
-                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                : 'bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
             }`}
             onClick={handleUpdateCard}
           >
@@ -348,7 +348,7 @@ export default function CardViewer({
           className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md ${
             isCreatingCard
               ? 'bg-blue-500 text-white border border-blue-500'
-              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+              : 'bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
           }`}
           onClick={handleCreateNewCard}
         >
@@ -356,7 +356,7 @@ export default function CardViewer({
         </button>
         {currentCard && (
           <button
-            className="px-5 py-2.5 text-sm font-medium bg-white text-red-600 border border-red-300 rounded-lg hover:bg-red-50 hover:border-red-400 transition-all duration-200 shadow-sm hover:shadow-md"
+            className="px-5 py-2.5 text-sm font-medium bg-white dark:bg-[#23272f] text-red-600 border border-red-300 dark:border-red-700 rounded-lg hover:bg-red-50 dark:hover:bg-red-900 hover:border-red-400 dark:hover:border-red-400 transition-all duration-200 shadow-sm hover:shadow-md"
             onClick={handleDeleteCard}
           >
             <FaTrash className="inline-block mr-1 text-lg" /> 削除
@@ -364,7 +364,7 @@ export default function CardViewer({
         )}
         <Link
           href={`word-list/${selectedDeckId}`}
-          className="px-5 py-2.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-all duration-200 shadow-sm hover:shadow-md inline-flex items-center gap-1"
+          className="px-5 py-2.5 text-sm font-medium bg-white dark:bg-[#23272f] text-gray-700 dark:text-gray-100 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-200 shadow-sm hover:shadow-md inline-flex items-center gap-1"
         >
           <FaListUl className="inline-block mr-1 text-lg" /> 一覧
         </Link>

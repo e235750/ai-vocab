@@ -94,13 +94,13 @@ export default function SearchPage() {
 
   if (!query) {
     return (
-      <div className="container mx-auto px-4 py-8">
+      <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-gray-900 min-h-screen">
         <div className="text-center">
-          <LuSearch className="mx-auto w-16 h-16 text-gray-400 mb-4" />
-          <h2 className="text-2xl font-bold text-gray-900 mb-2">
+          <LuSearch className="mx-auto w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" />
+          <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
             単語帳を検索
           </h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             上部の検索バーから単語帳を検索してください
           </p>
         </div>
@@ -109,14 +109,14 @@ export default function SearchPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
+    <div className="container mx-auto px-4 py-8 bg-gray-50 dark:bg-[#202020] min-h-screen">
       {/* 検索ヘッダー */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-2">
+        <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2">
           「{query}」の検索結果
         </h1>
         {searchResults && (
-          <p className="text-gray-600">
+          <p className="text-gray-600 dark:text-gray-400">
             {searchResults.total}件中 {(currentPage - 1) * 20 + 1}-
             {Math.min(currentPage * 20, searchResults.total)}件を表示
           </p>
@@ -127,7 +127,7 @@ export default function SearchPage() {
       <div className="mb-6">
         <button
           onClick={() => setShowFilters(!showFilters)}
-          className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+          className="flex items-center gap-2 px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100"
         >
           <LuFilter className="w-4 h-4" />
           フィルター
@@ -136,11 +136,11 @@ export default function SearchPage() {
 
       {/* フィルターパネル */}
       {showFilters && (
-        <div className="bg-gray-50 rounded-lg p-4 mb-6">
+        <div className="bg-gray-50 dark:bg-gray-800 rounded-lg p-4 mb-6">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
             {/* 公開設定フィルター */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 公開設定
               </label>
               <select
@@ -158,7 +158,7 @@ export default function SearchPage() {
                         : e.target.value === 'true',
                   })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-md"
               >
                 <option value="">全て</option>
                 <option value="true">公開のみ</option>
@@ -168,7 +168,7 @@ export default function SearchPage() {
 
             {/* 所有者フィルター */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 所有者
               </label>
               <select
@@ -186,7 +186,7 @@ export default function SearchPage() {
                         : e.target.value === 'true',
                   })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-md"
               >
                 <option value="">全て</option>
                 <option value="true">自分の単語帳のみ</option>
@@ -196,7 +196,7 @@ export default function SearchPage() {
 
             {/* 最小単語数フィルター */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 最小単語数
               </label>
               <input
@@ -211,14 +211,14 @@ export default function SearchPage() {
                       : undefined,
                   })
                 }
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-md"
                 placeholder="例: 10"
               />
             </div>
 
             {/* ソート設定 */}
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-200 mb-2">
                 並び順
               </label>
               <select
@@ -231,7 +231,7 @@ export default function SearchPage() {
                     sort_order,
                   })
                 }}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 rounded-md"
               >
                 <option value="created_at_desc">作成日（新しい順）</option>
                 <option value="created_at_asc">作成日（古い順）</option>
@@ -246,7 +246,7 @@ export default function SearchPage() {
           <div className="mt-4">
             <button
               onClick={handleFilterChange}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              className="px-4 py-2 bg-blue-600 hover:bg-blue-700 dark:bg-blue-500 dark:hover:bg-blue-400 text-white dark:text-gray-900 rounded-lg"
             >
               フィルターを適用
             </button>
@@ -259,17 +259,19 @@ export default function SearchPage() {
         <Loading />
       ) : error ? (
         <div className="text-center py-8">
-          <p className="text-red-600">{error}</p>
+          <p className="text-red-600 dark:text-red-400">{error}</p>
         </div>
       ) : searchResults ? (
         <>
           {searchResults.wordbooks.length === 0 ? (
             <div className="text-center py-8">
-              <LuSearch className="mx-auto w-16 h-16 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
+              <LuSearch className="mx-auto w-16 h-16 text-gray-400 dark:text-gray-600 mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
                 検索結果が見つかりません
               </h3>
-              <p className="text-gray-600">検索条件を変更してお試しください</p>
+              <p className="text-gray-600 dark:text-gray-400">
+                検索条件を変更してお試しください
+              </p>
             </div>
           ) : (
             <>
@@ -282,19 +284,19 @@ export default function SearchPage() {
                     <button
                       onClick={() => handlePageChange(currentPage - 1)}
                       disabled={!searchResults.has_prev}
-                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       前へ
                     </button>
 
-                    <span className="px-3 py-2 text-sm font-medium text-gray-700">
+                    <span className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200">
                       {currentPage} / {searchResults.total_pages}
                     </span>
 
                     <button
                       onClick={() => handlePageChange(currentPage + 1)}
                       disabled={!searchResults.has_next}
-                      className="px-3 py-2 text-sm font-medium text-gray-500 bg-white border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 py-2 text-sm font-medium text-gray-500 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       次へ
                     </button>

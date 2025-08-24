@@ -30,7 +30,7 @@ export default function SignInForm() {
   }
   return (
     <>
-      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-white dark:bg-[#171717]">
+      <div className="flex min-h-full flex-1 flex-col justify-center px-6 py-12 lg:px-8 bg-white dark:bg-[#202020]">
         <div className="sm:mx-auto sm:w-full sm:max-w-sm">
           {/* <Image
             alt="Your Company"
@@ -119,7 +119,9 @@ export default function SignInForm() {
                 <div className="w-full border-t border-gray-300 dark:border-gray-700" />
               </div>
               <div className="relative flex justify-center text-sm">
-                <span className="bg-white dark:bg-[#171717] px-2 text-gray-500 dark:text-gray-400">または</span>
+                <span className="bg-white dark:bg-[#202020] px-2 text-gray-500 dark:text-gray-200">
+                  または
+                </span>
               </div>
             </div>
 

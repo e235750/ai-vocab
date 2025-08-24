@@ -21,8 +21,8 @@ export default function DeckItem({
   onDuplicate,
 }: DeckItemProps) {
   const activeClasses = isActive
-    ? 'bg-indigo-50 border-indigo-400'
-    : 'bg-white border-gray-300 hover:bg-gray-50'
+    ? 'bg-indigo-50 dark:bg-indigo-900 border-indigo-400 dark:border-indigo-500'
+    : 'bg-white dark:bg-[#23272f] border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800'
 
   const handleEdit = () => {
     if (onEdit) {
@@ -67,11 +67,13 @@ export default function DeckItem({
     >
       <div className="flex items-center justify-between p-4">
         <div className="flex-1">
-          <span className="font-medium">{deck.name}</span>
+          <span className="font-medium text-gray-900 dark:text-gray-100">
+            {deck.name}
+          </span>
         </div>
 
         <div className="flex items-center gap-3">
-          <span className="px-3 py-1 text-sm bg-gray-200 rounded-full">
+          <span className="px-3 py-1 text-sm bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-100 rounded-full">
             {deck.num_words}
           </span>
 
