@@ -15,7 +15,7 @@ export default function WordbookEmptyState({
           ? '単語帳がありません'
           : '公開単語帳が見つかりません'}
       </p>
-  <p className="text-sm text-gray-500 dark:text-gray-400">
+      <p className="text-sm text-gray-500 dark:text-gray-400">
         {activeTab === 'my'
           ? '新しい単語帳を作成してみましょう'
           : '検索条件を変更するか、後でもう一度お試しください'}

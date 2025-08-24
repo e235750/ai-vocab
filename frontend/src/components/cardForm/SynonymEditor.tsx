@@ -17,7 +17,9 @@ export default function SynonymEditor({
 }: SynonymEditorProps) {
   return (
     <div>
-      <label className="font-semibold text-gray-700 dark:text-gray-200">類義語</label>
+      <label className="font-semibold text-gray-700 dark:text-gray-200">
+        類義語
+      </label>
       <div className="mt-2">
         {synonyms.length > 0 && (
           <div className="flex flex-wrap items-center gap-2 mb-2">

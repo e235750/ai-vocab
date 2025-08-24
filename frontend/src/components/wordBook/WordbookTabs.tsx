@@ -8,7 +8,7 @@ export default function WordbookTabs({
   onTabChange,
 }: WordbookTabsProps) {
   return (
-  <div className="flex border-b border-gray-200 dark:border-gray-700">
+    <div className="flex border-b border-gray-200 dark:border-gray-700">
       <button
         onClick={() => onTabChange('my')}
         className={`px-4 py-2 font-medium text-sm border-b-2 transition-colors ${

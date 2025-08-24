@@ -132,8 +132,10 @@ export default function CardViewer({
   }
 
   return (
-  <section className="flex flex-col items-center p-6 bg-white dark:bg-[#23272f] border border-gray-300 dark:border-gray-700 rounded-xl">
-  <h2 className="mb-4 text-base font-semibold text-gray-600 dark:text-gray-300">{deckName}</h2>
+    <section className="flex flex-col items-center p-6 bg-white dark:bg-[#23272f] border border-gray-300 dark:border-gray-700 rounded-xl">
+      <h2 className="mb-4 text-base font-semibold text-gray-600 dark:text-gray-300">
+        {deckName}
+      </h2>
 
       {/* フリップカード */}
       <div
@@ -292,13 +294,15 @@ export default function CardViewer({
               </div>
             ) : (
               <div className="flex items-center justify-center h-full">
-                <p className="text-gray-500 dark:text-gray-400">カードがありません</p>
+                <p className="text-gray-500 dark:text-gray-400">
+                  カードがありません
+                </p>
               </div>
             )}
           </div>
         </div>
       </div>
-  <div className="flex items-center w-full gap-4 mb-6">
+      <div className="flex items-center w-full gap-4 mb-6">
         <div className="flex items-center flex-grow gap-4">
           <input
             type="range"
@@ -331,7 +335,7 @@ export default function CardViewer({
           </button>
         </div>
       </div>
-  <div className="flex flex-wrap gap-3 justify-center">
+      <div className="flex flex-wrap gap-3 justify-center">
         {cards.length > 0 && (
           <button
             className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-all duration-200 shadow-sm hover:shadow-md ${

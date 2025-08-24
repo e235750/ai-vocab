@@ -111,9 +111,9 @@ export default function WordItem({
   return (
     <div className="border-b last:border-b-0 border-gray-200 dark:border-gray-700 hover:bg-gray-50/50 dark:hover:bg-gray-800/60 transition-colors">
       {/* --- アコーディオンヘッダー --- */}
-  <div className="relative p-5 sm:px-6 sm:py-6">
+      <div className="relative p-5 sm:px-6 sm:py-6">
         {/* 右上のボタンエリア */}
-  <div className="absolute flex top-3 right-3">
+        <div className="absolute flex top-3 right-3">
           {/* ブックマークボタン */}
           {user && (
             <button
@@ -127,7 +127,10 @@ export default function WordItem({
               disabled={bookmarkLoading}
             >
               {isCardBookmarked(word.id) ? (
-                <FaBookmark size={16} className="text-yellow-500 dark:text-yellow-400" />
+                <FaBookmark
+                  size={16}
+                  className="text-yellow-500 dark:text-yellow-400"
+                />
               ) : (
                 <FaRegBookmark size={16} />
               )}

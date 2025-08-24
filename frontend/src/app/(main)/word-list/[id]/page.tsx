@@ -244,7 +244,9 @@ export default function Page() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
         <div className="text-center">
-          <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-2">エラー</h2>
+          <h2 className="text-xl font-semibold text-red-600 dark:text-red-400 mb-2">
+            エラー
+          </h2>
           <p className="text-gray-600 dark:text-gray-400">{error}</p>
         </div>
       </div>

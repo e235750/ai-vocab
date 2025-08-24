@@ -78,7 +78,9 @@ export default function DeckFormModal({
       <div className="w-full max-w-lg bg-white dark:bg-[#23272f] rounded-xl shadow-lg">
         <form onSubmit={handleSubmit}>
           <div className="flex items-center justify-between p-4 border-b border-gray-200 dark:border-gray-700">
-            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">{title}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100">
+              {title}
+            </h3>
             <button
               type="button"
               onClick={handleClose}

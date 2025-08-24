@@ -33,7 +33,7 @@ const eslintConfig = [
         // 変数：キャメルケースまたは定数用大文字スネークケース
         {
           selector: 'variable',
-          format: ['camelCase', 'UPPER_CASE'],
+          format: ['camelCase', 'UPPER_CASE', 'snake_case'],
           leadingUnderscore: 'allow', // _userId等を許可
           trailingUnderscore: 'forbid', // 末尾アンダースコア禁止
         },

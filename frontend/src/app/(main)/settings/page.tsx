@@ -3,7 +3,6 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import {
-  FaUserEdit,
   FaSignOutAlt,
   FaTrashAlt,
   FaPalette,
@@ -21,28 +20,6 @@ export default function SettingPage() {
   const [displayName, setDisplayName] = useState(user?.displayName || '')
   const [isCardAnimation, setIsCardAnimation] = useState(true)
   const [isSimpleCard, setIsSimpleCard] = useState(false)
-  // ダークモード状態をlocalStorageとhtmlクラスから初期化
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme')
-      console.log('saved theme:', saved)
-      if (saved) return saved === 'dark'
-      return document.documentElement.classList.contains('dark')
-    }
-    return false
-  })
-
-  // ダークモード切り替え時にhtmlクラスとlocalStorageを同期
-  useEffect(() => {
-    if (typeof window === 'undefined') return
-    if (isDarkMode) {
-      document.documentElement.classList.add('dark')
-      localStorage.setItem('theme', 'dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-      localStorage.setItem('theme', 'light')
-    }
-  }, [isDarkMode])
   const router = useRouter()
 
   const handleLogout = () => {
@@ -175,37 +152,6 @@ export default function SettingPage() {
             </div>
             <span className="ml-4 text-sm text-gray-500 dark:text-gray-300 w-10 inline-block text-center">
               {isSimpleCard ? 'ON' : 'OFF'}
-            </span>
-          </label>
-        </div>
-        <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl shadow">
-          <FaRegMoon className="w-6 h-6 text-blue-400" />
-          <span className="font-semibold flex-1 text-gray-700 dark:text-gray-200">
-            ダークモード
-          </span>
-          <label className="flex cursor-pointer select-none items-center">
-            <div className="relative">
-              <input
-                type="checkbox"
-                checked={isDarkMode}
-                onChange={(e) => setIsDarkMode(e.target.checked)}
-                className="sr-only"
-              />
-              <div
-                className={`block h-8 w-14 rounded-full transition-colors duration-300 ${
-                  isDarkMode ? 'bg-blue-500' : 'bg-[#E5E7EB] dark:bg-gray-700'
-                }`}
-              ></div>
-              <div
-                className={`dot absolute top-1 left-1 h-6 w-6 rounded-full transition-all duration-300 ${
-                  isDarkMode
-                    ? 'bg-blue-100 translate-x-6'
-                    : 'bg-white translate-x-0'
-                }`}
-              ></div>
-            </div>
-            <span className="ml-4 text-sm text-gray-500 dark:text-gray-300 w-10 inline-block text-center">
-              {isDarkMode ? 'ON' : 'OFF'}
             </span>
           </label>
         </div>

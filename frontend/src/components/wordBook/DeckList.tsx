@@ -46,9 +46,11 @@ export default function DeckList({
     }
   }
   return (
-  <section className="p-6 bg-white dark:bg-[#23272f] border border-gray-300 dark:border-gray-700 rounded-xl">
+    <section className="p-6 bg-white dark:bg-[#23272f] border border-gray-300 dark:border-gray-700 rounded-xl">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-base font-semibold text-gray-600 dark:text-gray-300">単語帳一覧</h2>
+        <h2 className="text-base font-semibold text-gray-600 dark:text-gray-300">
+          単語帳一覧
+        </h2>
         <button
           className="px-4 py-1.5 font-semibold bg-white dark:bg-[#23272f] border border-gray-300 dark:border-gray-700 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-900 dark:text-gray-100"
           onClick={openCreateDeckModal}
@@ -69,7 +71,9 @@ export default function DeckList({
           />
         ) : decks.length === 0 ? (
           <div className="text-center">
-            <p className="text-sm text-gray-500 dark:text-gray-400">単語帳がありません。</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">
+              単語帳がありません。
+            </p>
             <p className="mt-1 text-sm text-gray-500 dark:text-gray-400">
               「新規作成」ボタンから新しい単語帳を作成してください。
             </p>

@@ -147,7 +147,10 @@ export default function WordbookCard({
             {wordbook.is_public ? (
               <LuGlobe className="w-4 h-4 text-green-500" title="公開" />
             ) : (
-              <LuLock className="w-4 h-4 text-gray-400 dark:text-gray-600" title="非公開" />
+              <LuLock
+                className="w-4 h-4 text-gray-400 dark:text-gray-600"
+                title="非公開"
+              />
             )}
 
             {/* ドロップダウンメニュー */}

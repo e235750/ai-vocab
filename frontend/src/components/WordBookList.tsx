@@ -14,7 +14,9 @@ export default function WordBookList({ wordbooks }: WordBookListProps) {
         <h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
           単語帳が見つかりません
         </h3>
-        <p className="text-gray-600 dark:text-gray-400">条件に一致する単語帳がありません</p>
+        <p className="text-gray-600 dark:text-gray-400">
+          条件に一致する単語帳がありません
+        </p>
       </div>
     )
   }
@@ -42,9 +44,15 @@ export default function WordBookList({ wordbooks }: WordBookListProps) {
               </div>
               <div className="flex items-center gap-1 ml-2">
                 {wordbook.is_public ? (
-                  <LuGlobe className="w-4 h-4 text-green-600 dark:text-green-400" title="公開" />
+                  <LuGlobe
+                    className="w-4 h-4 text-green-600 dark:text-green-400"
+                    title="公開"
+                  />
                 ) : (
-                  <LuLock className="w-4 h-4 text-gray-500 dark:text-gray-400" title="非公開" />
+                  <LuLock
+                    className="w-4 h-4 text-gray-500 dark:text-gray-400"
+                    title="非公開"
+                  />
                 )}
               </div>
             </div>

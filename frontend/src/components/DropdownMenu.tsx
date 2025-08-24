@@ -24,10 +24,10 @@ type DropdownMenuProps = {
 
 export default function DropdownMenu({
   items,
-  buttonClassName = "text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors",
-  menuClassName = "absolute right-0 top-8 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50",
+  buttonClassName = 'text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-white p-1 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors',
+  menuClassName = 'absolute right-0 top-8 mt-1 w-48 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg z-50',
   buttonIcon,
-  buttonTitle = "メニューを開く",
+  buttonTitle = 'メニューを開く',
   onMenuOpen,
   onMenuClose,
 }: DropdownMenuProps) {
@@ -82,7 +82,12 @@ export default function DropdownMenu({
           <div className="py-1">
             {items.map((item, index) => {
               if (item.isDivider) {
-                return <hr key={`divider-${index}`} className="my-1 border-gray-200 dark:border-gray-600" />
+                return (
+                  <hr
+                    key={`divider-${index}`}
+                    className="my-1 border-gray-200 dark:border-gray-600"
+                  />
+                )
               }
 
               // Linkアイテムの場合
@@ -94,7 +99,7 @@ export default function DropdownMenu({
                     onClick={() => handleItemClick(item)}
                     className={
                       item.className ||
-                      "flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                      'flex items-center px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
                     }
                   >
                     {item.icon && <span className="mr-3">{item.icon}</span>}
@@ -110,7 +115,7 @@ export default function DropdownMenu({
                   onClick={() => handleItemClick(item)}
                   className={
                     item.className ||
-                    "flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                    'flex items-center w-full px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors'
                   }
                 >
                   {item.icon && <span className="mr-3">{item.icon}</span>}
