@@ -81,3 +81,12 @@ body {
   border-radius: 4px;
   border: none;
 }
+
+/* === 汎用ダークモード用クラス === */
+.dark .dark-bg {
+  background-color: #202020 !important;
+  color: #ededed !important;
+}
+.dark .dark-text {
+  color: #ededed !important;
+}
