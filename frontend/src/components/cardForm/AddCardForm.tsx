@@ -243,7 +243,7 @@ export default function AddCardForm({
 
   if (isAIGenerating) {
     return (
-      <div className="flex items-center p-3 bg-white border border-gray-300 rounded-xl">
+      <div className="flex items-center p-3 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-700 rounded-xl">
         <Loading
           className="h-10 w-60 m-auto pl-10"
           message="生成中です..."
@@ -257,21 +257,25 @@ export default function AddCardForm({
   // --- 展開前の表示 ---
   if (!isExpanded) {
     return (
-      <div className="flex items-center p-3 bg-white border border-gray-300 rounded-xl">
+      <div className="flex items-center p-3 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-xl">
         <div className="flex-1">
-          <label className="text-xs text-gray-500">表面</label>
+          <label className="text-xs text-gray-500 dark:text-gray-50">
+            表面
+          </label>
           <input
             type="text"
             value={english}
             onChange={(e) => setEnglish(e.target.value)}
             placeholder="新しい単語を追加..."
-            className="w-full text-lg bg-transparent focus:outline-none"
+            className="w-full text-lg bg-transparent focus:outline-none text-gray-800 dark:text-gray-50"
             required
           />
         </div>
-        <div className="w-px h-10 bg-gray-200 mx-4"></div>
+        <div className="w-px h-10 bg-gray-200 dark:bg-gray-700 mx-4"></div>
         <div className="flex-1">
-          <label className="text-xs text-gray-500">裏面</label>
+          <label className="text-xs text-gray-500 dark:text-gray-50">
+            裏面
+          </label>
           <input
             type="text"
             value={definitions[0]?.japanese[0] || ''}
@@ -281,7 +285,7 @@ export default function AddCardForm({
               setDefinitions(newDefs)
             }}
             placeholder="意味"
-            className="w-full text-lg bg-transparent focus:outline-none"
+            className="w-full text-lg bg-transparent focus:outline-none text-gray-800 dark:text-gray-50"
           />
         </div>
 
@@ -289,7 +293,7 @@ export default function AddCardForm({
         <button
           type="button"
           onClick={() => setIsExpanded(true)}
-          className="p-2 ml-1 text-gray-400 hover:text-gray-700"
+          className="p-2 ml-1 text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
         >
           <FaChevronRight />
         </button>
@@ -298,7 +302,7 @@ export default function AddCardForm({
         <button
           type="button"
           onClick={handleQuickAdd}
-          className="p-2 ml-1 text-white bg-blue-500 rounded-lg hover:bg-blue-600"
+          className="p-2 ml-1 text-white bg-blue-500 rounded-lg hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800"
         >
           <FaPlus />
         </button>
@@ -308,7 +312,7 @@ export default function AddCardForm({
           type="button"
           onClick={handleAIGenerate}
           disabled={isAIGenerating || !english.trim()}
-          className="p-2 ml-1 text-white bg-purple-500 rounded-lg hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed"
+          className="p-2 ml-1 text-white bg-purple-500 rounded-lg hover:bg-purple-600 dark:bg-purple-700 dark:hover:bg-purple-800 disabled:bg-gray-300 disabled:cursor-not-allowed"
           title="AI生成"
         >
           <FaRobot />
@@ -321,7 +325,7 @@ export default function AddCardForm({
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-4 bg-white border-2 border-blue-500 rounded-xl flex flex-col gap-6"
+      className="p-4 bg-white dark:bg-gray-900 border-2 border-blue-500 dark:border-blue-700 rounded-xl flex flex-col gap-6"
     >
       <datalist id="part-of-speech-list">
         {partOfSpeechOptions.map((pos) => (
@@ -331,20 +335,22 @@ export default function AddCardForm({
 
       <div className="flex justify-between items-start">
         <div className="flex-1">
-          <label className="font-semibold text-gray-700">表面</label>
+          <label className="font-semibold text-gray-700 dark:text-gray-50">
+            表面
+          </label>
           <div className="flex gap-2 mt-1">
             <input
               type="text"
               value={english}
               onChange={(e) => setEnglish(e.target.value)}
               placeholder="example"
-              className="text-xl text-gray-800 flex-1 border rounded p-2"
+              className="text-xl text-gray-800 dark:text-gray-50 flex-1 border rounded p-2 bg-white dark:bg-gray-900 border-gray-300 dark:border-gray-700"
             />
             <button
               type="button"
               onClick={handleAIGenerate}
               disabled={isAIGenerating || !english.trim()}
-              className="px-4 py-2 text-white bg-purple-500 rounded hover:bg-purple-600 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
+              className="px-4 py-2 text-white bg-purple-500 rounded hover:bg-purple-600 dark:bg-purple-700 dark:hover:bg-purple-800 disabled:bg-gray-300 disabled:cursor-not-allowed flex items-center gap-2"
               title="AI生成"
             >
               <>
@@ -357,13 +363,13 @@ export default function AddCardForm({
         <button
           type="button"
           onClick={() => setIsExpanded(false)}
-          className="p-1 text-gray-500 hover:text-gray-800"
+          className="p-1 text-gray-500 hover:text-gray-800 dark:text-gray-300 dark:hover:text-gray-50"
         >
           <FaChevronUp />
         </button>
       </div>
 
-      <hr className="border-t border-gray-200" />
+      <hr className="border-t border-gray-200 dark:border-gray-700" />
 
       <DefinitionEditor
         definitions={definitions}
@@ -376,7 +382,7 @@ export default function AddCardForm({
         onRemoveMeaning={handleRemoveMeaning}
       />
 
-      <hr className="border-t border-gray-200" />
+      <hr className="border-t border-gray-200 dark:border-gray-700" />
 
       <ExampleSentenceEditor
         exampleSentences={exampleSentences}
@@ -388,7 +394,7 @@ export default function AddCardForm({
         onJapaneseChange={setNewExampleJapanese}
       />
 
-      <hr className="border-t border-gray-200" />
+      <hr className="border-t border-gray-200 dark:border-gray-700" />
 
       <SynonymEditor
         synonyms={synonyms}
@@ -398,19 +404,19 @@ export default function AddCardForm({
         onNewSynonymChange={setNewSynonym}
       />
 
-      <hr className="border-t border-gray-200" />
+      <hr className="border-t border-gray-200 dark:border-gray-700" />
 
       <div className="flex justify-end gap-3 mt-4">
         <button
           type="button"
           onClick={() => setIsExpanded(false)}
-          className="px-6 py-2 bg-gray-200 text-gray-800 rounded-lg hover:bg-gray-300"
+          className="px-6 py-2 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
         >
           キャンセル
         </button>
         <button
           type="submit"
-          className="w-full px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 font-bold"
+          className="w-full px-4 py-3 text-white bg-blue-500 rounded-lg hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-800 font-bold"
         >
           この内容でカードを追加する
         </button>
