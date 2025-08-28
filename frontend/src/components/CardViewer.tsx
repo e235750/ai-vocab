@@ -58,6 +58,7 @@ export default function CardViewer({
   const currentCard = cards[currentIndex]
   const { settings } = useUserSettingsStore()
   const isSimpleCard = settings?.simple_card_mode
+  const isCardAnimation = settings?.flip_animation !== false
 
   // ブックマーク一覧を初期読み込み（まだロードされていない場合のみ）
   useEffect(() => {
@@ -146,9 +147,9 @@ export default function CardViewer({
         onClick={handleCardClick}
       >
         <div
-          className={`absolute inset-0 w-full h-full transition-transform duration-300 transform-style-preserve-3d ${
-            isFlipped ? 'rotate-x-180' : ''
-          }`}
+          className={`absolute inset-0 w-full h-full transform-style-preserve-3d ${
+            isCardAnimation ? 'transition-transform duration-300' : ''
+          } ${isFlipped ? 'rotate-x-180' : ''}`}
         >
           {/* 表面（英単語） */}
           <div className="absolute inset-0 w-full h-full bg-white dark:bg-[#23272f] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg backface-hidden flex items-center justify-center">
