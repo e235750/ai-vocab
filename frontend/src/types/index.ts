@@ -1,13 +1,13 @@
 // 検索クエリ用インターフェース
 export interface SearchQuery {
-  q?: string;
-  is_public?: boolean;
-  is_owned?: boolean;
-  min_words?: number;
-  sort_by?: string; // 例: "created_at"
-  sort_order?: string; // 例: "desc"
-  page?: number;
-  limit?: number;
+  q?: string
+  is_public?: boolean
+  is_owned?: boolean
+  min_words?: number
+  sort_by?: string // 例: "created_at"
+  sort_order?: string // 例: "desc"
+  page?: number
+  limit?: number
 }
 // 意味の型定義
 export interface Definition {
@@ -99,3 +99,19 @@ export interface NewBookmark {
 }
 // 権限レベルの定義
 export type PermissionLevel = 'owner' | 'public' | 'readonly'
+
+export interface UserSettings {
+  uid: string
+  flip_animation: boolean
+  simple_card_mode: boolean
+  updated_at: string
+}
+
+export interface UserProfile {
+  uid: string
+  display_name?: string
+  photo_url?: string
+  email?: string
+  created_at?: string
+  updated_at?: string
+}

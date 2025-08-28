@@ -3,12 +3,19 @@ import { useState, useEffect } from 'react'
 import { useAuth } from '@/hooks/useAuth'
 import { useRouter } from 'next/navigation'
 import {
+  getUserSettings,
+  updateUserSettings,
+  getUserProfile,
+  updateUserProfile,
+} from '@/lib/api/user'
+import { useUserSettingsStore } from '@/stores/userSettingsStore'
+import { useUserStore } from '@/stores/userStore'
+import {
   FaSignOutAlt,
   FaTrashAlt,
   FaPalette,
   FaRegIdBadge,
   FaRegEye,
-  FaRegMoon,
 } from 'react-icons/fa'
 import { logout, deleteUser } from '@/lib/firebase/auth'
 
@@ -16,11 +23,80 @@ import { logout, deleteUser } from '@/lib/firebase/auth'
 
 export default function SettingPage() {
   const { user } = useAuth()
-  // TODO: logout, deleteAccount, updateDisplayName などはuseAuthやAPIで実装推奨
-  const [displayName, setDisplayName] = useState(user?.displayName || '')
+  const router = useRouter()
+  const { settings, setSettings } = useUserSettingsStore()
+  const { profile, setProfile } = useUserStore()
+  const [displayName, setDisplayName] = useState('')
   const [isCardAnimation, setIsCardAnimation] = useState(true)
   const [isSimpleCard, setIsSimpleCard] = useState(false)
-  const router = useRouter()
+
+  // ユーザー設定・プロフィール初期取得
+  useEffect(() => {
+    if (!user) return
+    user.getIdToken().then(async (token: string) => {
+      const [settingsRes, profileRes] = await Promise.all([
+        getUserSettings(token),
+        getUserProfile(token),
+      ])
+      if (settingsRes && !('error' in settingsRes)) {
+        setSettings(settingsRes)
+        setIsSimpleCard(settingsRes.simple_card_mode)
+        if (typeof settingsRes.flip_animation === 'boolean') {
+          setIsCardAnimation(settingsRes.flip_animation)
+        }
+      }
+      if (profileRes && !('error' in profileRes)) {
+        setProfile(profileRes)
+        setDisplayName(profileRes.display_name || '')
+      }
+    })
+  }, [user, setSettings, setProfile])
+
+  // flip_animation変更時の処理
+  const handleCardAnimationChange = async (checked: boolean) => {
+    setIsCardAnimation(checked)
+    if (!user) return
+    const token = await user.getIdToken()
+    const updated = await updateUserSettings(token, {
+      ...settings,
+      flip_animation: checked,
+    })
+    if (updated && !('error' in updated)) {
+      setSettings(updated)
+    } else {
+      setSettings(null)
+    }
+  }
+
+  // 設定変更時にAPIへ反映
+  const handleSimpleCardChange = async (checked: boolean) => {
+    setIsSimpleCard(checked)
+    if (!user) return
+    const token = await user.getIdToken()
+    const updated = await updateUserSettings(token, {
+      ...settings,
+      simple_card_mode: checked,
+    })
+    if (updated && !('error' in updated)) {
+      setSettings(updated)
+    } else {
+      setSettings(null)
+    }
+  }
+
+  const handleDisplayNameChange = async () => {
+    if (!user) return
+    const token = await user.getIdToken()
+    const updated = await updateUserProfile(token, {
+      ...profile,
+      display_name: displayName,
+    })
+    if (updated && !('error' in updated)) {
+      setProfile(updated)
+    } else {
+      setProfile(null)
+    }
+  }
 
   const handleLogout = () => {
     if (!window.confirm('ログアウトしますか？')) return
@@ -65,7 +141,9 @@ export default function SettingPage() {
             ユーザー名
           </span>
           <span className="ml-2 text-gray-500 dark:text-gray-400 text-sm">
-            {user?.displayName ?? ''}
+            {typeof profile?.display_name === 'string'
+              ? profile.display_name
+              : ''}
           </span>
           <input
             type="text"
@@ -80,9 +158,7 @@ export default function SettingPage() {
                 : 'bg-gray-300 cursor-not-allowed'
             }`}
             disabled={!displayName}
-            onClick={() =>
-              alert('ユーザー名の変更は未実装です。DB/API設計が必要です。')
-            }
+            onClick={handleDisplayNameChange}
           >
             変更
           </button>
@@ -94,14 +170,14 @@ export default function SettingPage() {
         <div className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-800 rounded-xl shadow">
           <FaRegEye className="w-6 h-6 text-blue-400" />
           <span className="font-semibold flex-1 text-gray-700 dark:text-gray-200">
-            カードViewerアニメーション
+            カードのアニメーション
           </span>
           <label className="flex cursor-pointer select-none items-center">
             <div className="relative">
               <input
                 type="checkbox"
                 checked={isCardAnimation}
-                onChange={(e) => setIsCardAnimation(e.target.checked)}
+                onChange={(e) => handleCardAnimationChange(e.target.checked)}
                 className="sr-only"
               />
               <div
@@ -134,7 +210,7 @@ export default function SettingPage() {
               <input
                 type="checkbox"
                 checked={isSimpleCard}
-                onChange={(e) => setIsSimpleCard(e.target.checked)}
+                onChange={(e) => handleSimpleCardChange(e.target.checked)}
                 className="sr-only"
               />
               <div
