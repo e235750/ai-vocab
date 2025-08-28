@@ -93,6 +93,7 @@ export default function SettingPage() {
     })
     if (updated && !('error' in updated)) {
       setProfile(updated)
+      window.location.reload()
     } else {
       setProfile(null)
     }
