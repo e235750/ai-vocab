@@ -248,7 +248,7 @@ export default function HomePage() {
               onDeleteCard={handleDeleteCard}
             />
           ) : (
-            <div className="p-6 text-center bg-white border border-gray-300 rounded-xl">
+            <div className="p-6 text-center bg-white border border-gray-300 rounded-xl dark:bg-[#23272f] dark:border-gray-700">
               単語帳を選択してください。
             </div>
           )}
