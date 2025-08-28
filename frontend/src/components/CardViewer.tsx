@@ -12,6 +12,7 @@ import {
   FaRegBookmark,
 } from 'react-icons/fa'
 import { Card } from '@/types'
+import { useUserSettingsStore } from '@/stores/userSettingsStore'
 import Link from 'next/link'
 import { useAuth } from '@/hooks/useAuth'
 import { useBookmarkStore } from '@/stores/bookmarkStore'
@@ -55,6 +56,8 @@ export default function CardViewer({
   } = useBookmarkStore()
 
   const currentCard = cards[currentIndex]
+  const { settings } = useUserSettingsStore()
+  const isSimpleCard = settings?.simple_card_mode
 
   // ブックマーク一覧を初期読み込み（まだロードされていない場合のみ）
   useEffect(() => {
@@ -189,7 +192,7 @@ export default function CardViewer({
             </div>
           </div>
 
-          {/* 裏面（詳細情報） */}
+          {/* 裏面（詳細情報 or 簡易モード） */}
           <div
             className="absolute inset-0 w-full h-full bg-white dark:bg-[#23272f] border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg backface-hidden rotate-x-180 overflow-y-auto"
             tabIndex={0}
@@ -221,75 +224,92 @@ export default function CardViewer({
                 )}
                 {/* ボディ */}
                 <main className="card-body">
-                  {/* 定義 */}
-                  {currentCard.definitions &&
-                    currentCard.definitions.length > 0 && (
-                      <div>
-                        <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
-                          定義
-                        </h3>
-                        {currentCard.definitions.map((def, index) => (
-                          <div key={index} className="mb-4">
-                            <p className="font-semibold text-gray-700 dark:text-gray-200 mb-2">
-                              {def.part_of_speech}
-                            </p>
-                            <ul className="flex flex-wrap gap-2 list-none p-0 m-0">
-                              {def.japanese.map((jp, i) => (
-                                <li
-                                  key={i}
-                                  className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-full text-sm"
-                                >
-                                  {jp}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        ))}
+                  {isSimpleCard ? (
+                    // 簡易表示モード: 最初の意味をカード中央に大きく表示
+                    currentCard.definitions && currentCard.definitions.length > 0 && currentCard.definitions[0].japanese && currentCard.definitions[0].japanese.length > 0 ? (
+                      <div className="absolute inset-0 flex flex-col justify-center items-center h-full w-full">
+                        <p className="text-3xl font-bold text-gray-800 dark:text-gray-100 mb-2 text-center">
+                          {currentCard.definitions[0].japanese[0]}
+                        </p>
+                        <span className="text-base text-gray-500 dark:text-gray-300 mt-2">
+                          {currentCard.definitions[0].part_of_speech}
+                        </span>
                       </div>
-                    )}
-
-                  {/* 類義語 */}
-                  {currentCard.synonyms && currentCard.synonyms.length > 0 && (
-                    <div>
-                      <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2 mt-6">
-                        類義語
-                      </h3>
-                      <div className="flex flex-wrap gap-2">
-                        {currentCard.synonyms.map((synonym, index) => (
-                          <span
-                            key={index}
-                            className="bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200 px-3 py-1 rounded-full text-sm font-medium"
-                          >
-                            {synonym}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* 例文 */}
-                  {currentCard.example_sentences &&
-                    currentCard.example_sentences.length > 0 && (
-                      <div>
-                        <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2 mt-6">
-                          例文
-                        </h3>
-                        <div className="space-y-4">
-                          {currentCard.example_sentences.map(
-                            (sentence, index) => (
-                              <div key={index} className="mb-2">
-                                <p className="text-gray-800 dark:text-gray-100 font-mono">
-                                  {sentence.english}
+                    ) : null
+                  ) : (
+                    // 通常モード: 詳細
+                    <>
+                      {/* 定義 */}
+                      {currentCard.definitions &&
+                        currentCard.definitions.length > 0 && (
+                          <div>
+                            <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2">
+                              定義
+                            </h3>
+                            {currentCard.definitions.map((def, index) => (
+                              <div key={index} className="mb-4">
+                                <p className="font-semibold text-gray-700 dark:text-gray-200 mb-2">
+                                  {def.part_of_speech}
                                 </p>
-                                <p className="text-gray-600 dark:text-gray-300 text-sm">
-                                  {sentence.japanese}
-                                </p>
+                                <ul className="flex flex-wrap gap-2 list-none p-0 m-0">
+                                  {def.japanese.map((jp, i) => (
+                                    <li
+                                      key={i}
+                                      className="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-100 px-3 py-1 rounded-full text-sm"
+                                    >
+                                      {jp}
+                                    </li>
+                                  ))}
+                                </ul>
                               </div>
-                            )
-                          )}
+                            ))}
+                          </div>
+                        )}
+
+                      {/* 類義語 */}
+                      {currentCard.synonyms && currentCard.synonyms.length > 0 && (
+                        <div>
+                          <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2 mt-6">
+                            類義語
+                          </h3>
+                          <div className="flex flex-wrap gap-2">
+                            {currentCard.synonyms.map((synonym, index) => (
+                              <span
+                                key={index}
+                                className="bg-teal-100 dark:bg-teal-900 text-teal-800 dark:text-teal-200 px-3 py-1 rounded-full text-sm font-medium"
+                              >
+                                {synonym}
+                              </span>
+                            ))}
+                          </div>
                         </div>
-                      </div>
-                    )}
+                      )}
+
+                      {/* 例文 */}
+                      {currentCard.example_sentences &&
+                        currentCard.example_sentences.length > 0 && (
+                          <div>
+                            <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3 border-b border-gray-200 dark:border-gray-700 pb-2 mt-6">
+                              例文
+                            </h3>
+                            <div className="space-y-4">
+                              {currentCard.example_sentences.map(
+                                (sentence, index) => (
+                                  <div key={index} className="mb-2">
+                                    <p className="text-gray-800 dark:text-gray-100 font-mono">
+                                      {sentence.english}
+                                    </p>
+                                    <p className="text-gray-600 dark:text-gray-300 text-sm">
+                                      {sentence.japanese}
+                                    </p>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
+                    </>
+                  )}
                 </main>
               </div>
             ) : (
