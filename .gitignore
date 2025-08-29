@@ -25,3 +25,5 @@ serviceAccountKey.json
 # ===== OS・エディタ =====
 .DS_Store
 .vscode/
+
+Makefile

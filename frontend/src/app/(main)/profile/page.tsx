@@ -4,6 +4,7 @@ import { useDeckStore } from '@/stores/deckStore'
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { getIdToken } from '@/lib/firebase/auth'
 
 export default function ProfilePage() {
   const { user, loading } = useAuth()
@@ -14,7 +15,8 @@ export default function ProfilePage() {
   useEffect(() => {
     const fetch = async () => {
       if (user) {
-        const idToken = await user.getIdToken()
+        const idToken = await getIdToken()
+        if (!idToken) return
         await fetchDecks(idToken)
       }
     }
@@ -54,19 +56,8 @@ export default function ProfilePage() {
       })
     : '-'
 
-  const myDecks =
-    user && decks
-      ? decks
-          .filter((deck) => deck.user_name === (user.displayName || user.email))
-          .sort(
-            (a, b) =>
-              new Date(b.created_at).getTime() -
-              new Date(a.created_at).getTime()
-          )
-      : []
-
-  const totalPages = Math.ceil(myDecks.length / pageSize)
-  const pagedDecks = myDecks.slice((page - 1) * pageSize, page * pageSize)
+  const totalPages = Math.ceil(decks.length / pageSize)
+  const pagedDecks = decks.slice((page - 1) * pageSize, page * pageSize)
 
   return (
     <div className="max-w-2xl mx-auto mt-10 p-8 bg-white dark:bg-gray-800 rounded-xl shadow-lg dark:shadow-xl">
@@ -150,9 +141,9 @@ export default function ProfilePage() {
               d="M12 4v16m8-8H4"
             />
           </svg>
-          作成した単語帳（{myDecks.length}）
+          作成した単語帳（{decks.length}）
         </h2>
-        {myDecks.length === 0 ? (
+        {decks.length === 0 ? (
           <div className="text-gray-500 dark:text-gray-400">
             まだ単語帳を作成していません。
           </div>

@@ -8,6 +8,7 @@ import { Deck } from '@/types'
 import DropdownMenu from '../DropdownMenu'
 import { useWordbookMenuItems } from '@/hooks/useMenuItems'
 import { PermissionLevel } from '@/types'
+import { getIdToken } from '@/lib/firebase/auth'
 
 interface WordbookCardProps {
   wordbook: Deck
@@ -64,7 +65,9 @@ export default function WordbookCard({
       num_words: wordbook.num_words,
       user_name: user.displayName || user.email || 'Unknown',
     }
-    const idToken = await user.getIdToken()
+    const idToken = await getIdToken()
+    if (!idToken) return
+
     const result = await duplicateWordbook(wordbook.id, duplicateData, idToken)
     if (result && result.id) {
       selectDeck(result.id)
@@ -116,7 +119,9 @@ export default function WordbookCard({
       user_name: user.displayName || user.email || 'Unknown',
     }
     // APIで複製
-    const idToken = await user.getIdToken()
+    const idToken = await getIdToken()
+    if (!idToken) return
+
     const result = await duplicateWordbook(wordbook.id, duplicateData, idToken)
     if (result && result.id) {
       selectDeck(result.id) // zustandで選択

@@ -197,7 +197,9 @@ export default function HomePage() {
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
         try {
-          const idToken = await user.getIdToken()
+          const idToken = await getIdToken()
+          if (!idToken) return
+
           const fetchedDecks = await storeFetchDecks(idToken)
           if (fetchedDecks.length > 0) {
             const firstDeckId = fetchedDecks[0].id

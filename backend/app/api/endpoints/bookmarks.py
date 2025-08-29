@@ -62,21 +62,20 @@ async def get_bookmarks(
     db: firestore.Client = Depends(get_db)
 ):
     """ユーザーのブックマーク一覧を取得"""
+    import traceback
     bookmarks_collection = db.collection('bookmarks')
-    
     try:
         bookmarks_query = bookmarks_collection.where(
             'user_id', '==', uid
         ).order_by('created_at', direction=firestore.Query.DESCENDING)
-        
         bookmarks = []
         for doc in bookmarks_query.stream():
             bookmark_data = doc.to_dict()
             bookmarks.append(BookmarkResponse(**bookmark_data))
-        
         return bookmarks
-        
     except Exception as e:
+        print("[BOOKMARKS GET ERROR]", e)
+        traceback.print_exc()
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"ブックマークの取得中にエラーが発生しました: {str(e)}"

@@ -19,6 +19,7 @@ import EditDeck from '@/components/wordBook/EditDeck'
 import DuplicateDeck from '@/components/wordBook/DuplicateDeck'
 import DropdownMenu from '@/components/DropdownMenu'
 import { Card, NewCard, Deck, PermissionLevel } from '@/types'
+import { getIdToken } from '@/lib/firebase/auth'
 
 export default function Page() {
   const { id } = useParams()
@@ -70,7 +71,9 @@ export default function Page() {
     if (!user || !wordbookId) return
 
     try {
-      const idToken = await user.getIdToken()
+      const idToken = await getIdToken()
+      if (!idToken) return
+
       await updateCard(cardId, updatedCard, idToken)
       // 単語リストを再取得
       const updatedWords = await fetchWordsInDeck(wordbookId, idToken)
@@ -83,7 +86,9 @@ export default function Page() {
   const handleDeleteCard = async (cardId: string) => {
     if (!user || !wordbookId) return
     try {
-      const idToken = await user.getIdToken()
+      const idToken = await getIdToken()
+      if (!idToken) return
+
       await deleteCard(cardId, idToken)
       // 単語リストを再取得
       const updatedWords = await fetchWordsInDeck(wordbookId, idToken)
@@ -101,7 +106,8 @@ export default function Page() {
     if (!window.confirm(confirmMessage)) return
 
     try {
-      const idToken = await user.getIdToken()
+      const idToken = await getIdToken()
+      if (!idToken) return
       const result = await deleteWordbook(wordbookId, idToken)
 
       if (result.error) {
@@ -153,7 +159,9 @@ export default function Page() {
       num_words: currentDeck.num_words,
       user_name: user.displayName || user.email || 'Unknown',
     }
-    const idToken = await user.getIdToken()
+    const idToken = await getIdToken()
+    if (!idToken) return
+
     const result = await duplicateWordbook(
       currentDeck.id,
       duplicateData,
@@ -190,7 +198,8 @@ export default function Page() {
     if (!wordbookId || !user) return
 
     try {
-      const idToken = await user.getIdToken()
+      const idToken = await getIdToken()
+      if (!idToken) return
       const { words: fetchedWords, deckName: fetchedDeckName } =
         await initializeDeckData(wordbookId, idToken)
       setWords(fetchedWords)
@@ -209,7 +218,8 @@ export default function Page() {
 
     const initializeData = async () => {
       try {
-        const idToken = await user.getIdToken()
+        const idToken = await getIdToken()
+        if (!idToken) return
         const { words: fetchedWords, deckName: fetchedDeckName } =
           await initializeDeckData(wordbookId, idToken)
         setWords(fetchedWords)

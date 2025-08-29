@@ -213,8 +213,7 @@ async def update_wordbook(
     updated_doc = wordbook_ref.get()
     return WordBookResponse(**updated_doc.to_dict())
 
-@router.get("/search/",
-            
+@router.get("/search",
     response_model=SearchResponse,
     summary="単語帳を検索",
     description="クエリに基づいて単語帳を検索し、フィルタリング・ソート機能を提供する"

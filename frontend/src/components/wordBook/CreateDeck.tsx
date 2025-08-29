@@ -3,6 +3,7 @@ import { DeckData } from '@/types'
 import { useDeckStore } from '@/stores/deckStore'
 import { useAuth } from '@/hooks/useAuth'
 import DeckFormModal from './DeckFormModal'
+import { getIdToken } from '@/lib/firebase/auth'
 
 type CreateDeckProps = {
   isOpen: boolean
@@ -22,11 +23,13 @@ export default function CreateDeck({ isOpen, onClose }: CreateDeckProps) {
 
     setIsLoading(true)
     try {
-      const idToken = await user.getIdToken()
+      const idToken = await getIdToken()
+      if (!idToken) return
+
       // ユーザー名を追加
       const dataWithUserName = {
         ...data,
-        user_name: user.displayName || user.email || 'ゲストユーザー'
+        user_name: user.displayName || user.email || 'ゲストユーザー',
       }
       await createDeck(dataWithUserName, idToken)
       onClose()

@@ -17,7 +17,7 @@ import {
   FaRegIdBadge,
   FaRegEye,
 } from 'react-icons/fa'
-import { logout, deleteUser } from '@/lib/firebase/auth'
+import { logout, deleteUser, getIdToken } from '@/lib/firebase/auth'
 
 // TODO: ユーザー名変更やアカウント設定をDBに保存する場合は、userスキーマやAPIエンドポイントの追加が必要です。
 
@@ -33,38 +33,50 @@ export default function SettingPage() {
   // ユーザー設定・プロフィール初期取得
   useEffect(() => {
     if (!user) return
-    user.getIdToken().then(async (token: string) => {
-      const [settingsRes, profileRes] = await Promise.all([
-        getUserSettings(token),
-        getUserProfile(token),
-      ])
-      if (settingsRes && !('error' in settingsRes)) {
-        setSettings(settingsRes)
-        setIsSimpleCard(settingsRes.simple_card_mode)
-        if (typeof settingsRes.flip_animation === 'boolean') {
-          setIsCardAnimation(settingsRes.flip_animation)
+    ;(async () => {
+      try {
+        const token = await getIdToken()
+        if (!token) return
+
+        const [settingsRes, profileRes] = await Promise.all([
+          getUserSettings(token).catch(e => {console.error('[getUserSettings]', e); return { error: String(e) }}),
+          getUserProfile(token).catch(e => {console.error('[getUserProfile]', e); return { error: String(e) }}),
+        ])
+        if (settingsRes && !('error' in settingsRes)) {
+          setSettings(settingsRes)
+          setIsSimpleCard(settingsRes.simple_card_mode)
+          if (typeof settingsRes.flip_animation === 'boolean') {
+            setIsCardAnimation(settingsRes.flip_animation)
+          }
         }
+        if (profileRes && !('error' in profileRes)) {
+          setProfile(profileRes)
+          setDisplayName(profileRes.display_name || '')
+        }
+      } catch (e) {
+        console.error('[useEffect initialUserData]', e)
       }
-      if (profileRes && !('error' in profileRes)) {
-        setProfile(profileRes)
-        setDisplayName(profileRes.display_name || '')
-      }
-    })
+    })()
   }, [user, setSettings, setProfile])
 
   // flip_animation変更時の処理
   const handleCardAnimationChange = async (checked: boolean) => {
     setIsCardAnimation(checked)
     if (!user) return
-    const token = await user.getIdToken()
-    const updated = await updateUserSettings(token, {
-      ...settings,
-      flip_animation: checked,
-    })
-    if (updated && !('error' in updated)) {
-      setSettings(updated)
-    } else {
-      setSettings(null)
+    try {
+      const token = await getIdToken()
+      if (!token) return
+      const updated = await updateUserSettings(token, {
+        ...settings,
+        flip_animation: checked,
+      }).catch(e => {console.error('[updateUserSettings]', e); return { error: String(e) }})
+      if (updated && !('error' in updated)) {
+        setSettings(updated)
+      } else {
+        setSettings(null)
+      }
+    } catch (e) {
+      console.error('[handleCardAnimationChange]', e)
     }
   }
 
@@ -72,30 +84,40 @@ export default function SettingPage() {
   const handleSimpleCardChange = async (checked: boolean) => {
     setIsSimpleCard(checked)
     if (!user) return
-    const token = await user.getIdToken()
-    const updated = await updateUserSettings(token, {
-      ...settings,
-      simple_card_mode: checked,
-    })
-    if (updated && !('error' in updated)) {
-      setSettings(updated)
-    } else {
-      setSettings(null)
+    try {
+      const token = await getIdToken()
+      if (!token) return
+      const updated = await updateUserSettings(token, {
+        ...settings,
+        simple_card_mode: checked,
+      }).catch(e => {console.error('[updateUserSettings]', e); return { error: String(e) }})
+      if (updated && !('error' in updated)) {
+        setSettings(updated)
+      } else {
+        setSettings(null)
+      }
+    } catch (e) {
+      console.error('[handleSimpleCardChange]', e)
     }
   }
 
   const handleDisplayNameChange = async () => {
     if (!user) return
-    const token = await user.getIdToken()
-    const updated = await updateUserProfile(token, {
-      ...profile,
-      display_name: displayName,
-    })
-    if (updated && !('error' in updated)) {
-      setProfile(updated)
-      window.location.reload()
-    } else {
-      setProfile(null)
+    try {
+      const token = await getIdToken()
+      if (!token) return
+      const updated = await updateUserProfile(token, {
+        ...profile,
+        display_name: displayName,
+      }).catch(e => {console.error('[updateUserProfile]', e); return { error: String(e) }})
+      if (updated && !('error' in updated)) {
+        setProfile(updated)
+        window.location.reload()
+      } else {
+        setProfile(null)
+      }
+    } catch (e) {
+      console.error('[handleDisplayNameChange]', e)
     }
   }
 

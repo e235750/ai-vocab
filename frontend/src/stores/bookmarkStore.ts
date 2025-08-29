@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { Bookmark } from '@/types'
 import * as bookmarksApi from '@/lib/api/bookmarks'
 import { getAuth } from 'firebase/auth'
+import { getIdToken } from '@/lib/firebase/auth'
 
 interface BookmarkStore {
   bookmarkedCardIds: Set<string>
@@ -29,7 +30,7 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
     if (get().isLoaded || get().loading) {
       return
     }
-    
+
     try {
       set({ loading: true, error: null })
 
@@ -39,7 +40,9 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
         throw new Error('ユーザーが認証されていません')
       }
 
-      const token = await user.getIdToken()
+      const token = await getIdToken()
+      if (!token) return
+
       const bookmarks = await bookmarksApi.getBookmarks(token)
 
       const bookmarkedCardIds = new Set(bookmarks.map((b) => b.card_id))
@@ -69,7 +72,9 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
         throw new Error('ユーザーが認証されていません')
       }
 
-      const token = await user.getIdToken()
+      const token = await getIdToken()
+      if (!token) return
+
       const { bookmarkedCardIds } = get()
 
       if (bookmarkedCardIds.has(cardId)) {
@@ -114,7 +119,9 @@ export const useBookmarkStore = create<BookmarkStore>((set, get) => ({
         return false
       }
 
-      const token = await user.getIdToken()
+      const token = await getIdToken()
+      if (!token) return false
+
       return await bookmarksApi.checkBookmarkExists(cardId, token)
     } catch (error) {
       console.error('ブックマーク確認エラー:', error)

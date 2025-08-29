@@ -8,6 +8,7 @@ import WordBookList from '@/components/WordBookList'
 import Loading from '@/components/Loading'
 import { LuFilter, LuSearch } from 'react-icons/lu'
 import { useAuth } from '@/hooks/useAuth'
+import { getIdToken } from '@/lib/firebase/auth'
 
 // SearchQuery型をそのまま使う
 
@@ -42,7 +43,8 @@ export default function SearchPage() {
       setError(null)
 
       try {
-        const idToken = await user.getIdToken()
+        const idToken = await getIdToken()
+        if (!idToken) return
 
         // SearchQuery型のオブジェクトを生成
         const searchQuery: SearchQuery = {

@@ -11,6 +11,7 @@ import CreateDeck from '@/components/wordBook/CreateDeck'
 import EditDeck from '@/components/wordBook/EditDeck'
 import DuplicateDeck from '@/components/wordBook/DuplicateDeck'
 import { Deck } from '@/types'
+import { getIdToken } from '@/lib/firebase/auth'
 
 export default function WordbooksPage() {
   const [activeTab, setActiveTab] = useState<'my' | 'public'>('my')
@@ -34,7 +35,8 @@ export default function WordbooksPage() {
 
       try {
         hasInitialized.current = true
-        const idToken = await user.getIdToken()
+        const idToken = await getIdToken()
+        if (!idToken) return
         await fetchAllDecks(idToken)
       } catch (error) {
         console.error('Failed to fetch wordbooks:', error)
@@ -58,7 +60,9 @@ export default function WordbooksPage() {
   const handleDelete = async (wordbook: Deck) => {
     try {
       if (!user) return
-      const idToken = await user.getIdToken()
+      const idToken = await getIdToken()
+      if (!idToken) return
+
       await deleteDeck(wordbook.id, idToken)
       alert('単語帳を削除しました')
     } catch (error) {

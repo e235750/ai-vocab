@@ -3,6 +3,7 @@ import { DeckData, Deck } from '@/types'
 import { useDeckStore } from '@/stores/deckStore'
 import { useAuth } from '@/hooks/useAuth'
 import DeckFormModal from './DeckFormModal'
+import { getIdToken } from '@/lib/firebase/auth'
 
 type DuplicateDeckProps = {
   isOpen: boolean
@@ -33,7 +34,9 @@ export default function DuplicateDeck({
         ...data,
         user_name: user.displayName || user.email || 'ゲストユーザー',
       }
-      const idToken = await user.getIdToken()
+      const idToken = await getIdToken()
+      if (!idToken) return
+
       await duplicateDeck(sourceDeck.id, dataWithUserName, idToken)
 
       // 複製完了後のコールバックを実行
